@@ -43,3 +43,5 @@ int init(struct state *machine_state) {
 		printf("current.mem[%d]  : %d\n", i , current.mem[i]);
 	}*/
 
+/* unuseful code
+*/
