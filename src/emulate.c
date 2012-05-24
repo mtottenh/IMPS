@@ -68,6 +68,30 @@ int init(state *machine_state) {
 	 return 0;
 }
 
+void add_function(uint8_t r1, uint8_t r2, uint8_t r3, state *machine_state){
+	machine_state->mem[r1] = machine_state->mem[r2] + machine_state->mem[r3];
+}
+
+void addi_function(uint8_t r1, uint8_t r2, uint16_t immediate, state *machine_state){
+	machine_state->mem[r1] = machine_state->mem[r2] + immediate;
+}
+
+void sub_function(uint8_t r1, uint8_t r2, uint8_t r3, state *machine_state){
+	machine_state->mem[r1] = machine_state->mem[r2] - machine_state->mem[r3];
+}
+
+void subi_function(uint8_t r1, uint8_t r2, uint16_t immediate, state *machine_state){
+	machine_state->mem[r1] = machine_state->mem[r2] - immediate;
+}
+
+void mul_function(uint8_t r1, uint8_t r2, uint8_t r3, state *machine_state){
+	machine_state->mem[r1] = machine_state->mem[r2] * machine_state->mem[r3];
+}
+
+void muli_function(uint8_t r1, uint8_t r2, uint16_t immediate, state *machine_state){
+	machine_state->mem[r1] = machine_state->mem[r2] * immediate;
+}
+
 
 /*useful code
  * for(int i = 0; i<MEM_SIZE; i++) {
