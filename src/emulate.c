@@ -23,7 +23,7 @@ uint32_t extract_address(uint32_t);
 
 void setup_pointers(functionPointer array[]);
 
-void incrementPC(state*);
+void increment_pc(state*);
 
 void halt_instruction(uint32_t, state *);
 void add_instruction(uint32_t, state *);
@@ -47,6 +47,7 @@ void out_instruction(uint32_t, state *);
 
 int main(int argc, char **argv) {
 	state current;
+	//Need to make state allocated on heap rather than on stack!
 	init(&current);
 	functionPointer funcPointers[19] = {NULL};
 	setup_pointers(funcPointers);
@@ -140,7 +141,7 @@ int16_t extract_immediate(uint32_t instruction) {
 }
 
 
-void incrementPC(state *machine_state) {
+void increment_pc(state *machine_state) {
 	machine_state->pc = machine_state->pc + 4;
 }
 
@@ -224,53 +225,55 @@ void beq_instruction(uint32_t instruction, state *machine_state) {
 	uint8_t r1 = extract_register_index(instruction, 1);
 	uint8_t r2 = extract_register_index(instruction, 2);
 	
-	if (r1 == r2) incrementPC(machine_state);
+	if (r1 == r2) increment_pc(machine_state);
 }
 
 void bne_instruction(uint32_t instruction, state *machine_state) {
 	uint8_t r1 = extract_register_index(instruction, 1);
 	uint8_t r2 = extract_register_index(instruction, 2);
 	
-	if (r1 != r2) incrementPC(machine_state);
+	if (r1 != r2) increment_pc(machine_state);
 }
 
 void blt_instruction(uint32_t instruction, state *machine_state) {
 	uint8_t r1 = extract_register_index(instruction, 1);
 	uint8_t r2 = extract_register_index(instruction, 2);
 	
-	if (r1 < r2) incrementPC(machine_state);
+	if (r1 < r2) increment_pc(machine_state);
 }
 
 void bgt_instruction(uint32_t instruction, state *machine_state) {
 	uint8_t r1 = extract_register_index(instruction, 1);
 	uint8_t r2 = extract_register_index(instruction, 2);
 	
-	if (r1 > r2) incrementPC(machine_state);
+	if (r1 > r2) increment_pc(machine_state);
 }
 
 void ble_instruction(uint32_t instruction, state *machine_state) {
 	uint8_t r1 = extract_register_index(instruction, 1);
 	uint8_t r2 = extract_register_index(instruction, 2);
 	
-	if (r1 <= r2) incrementPC(machine_state);
+	if (r1 <= r2) increment_pc(machine_state);
 }
 
 void bge_instruction(uint32_t instruction, state *machine_state) {
 	uint8_t r1 = extract_register_index(instruction, 1);
 	uint8_t r2 = extract_register_index(instruction, 2);
 	
-	if (r1 >= r2) incrementPC(machine_state);
+	if (r1 >= r2) increment_pc(machine_state);
 }
 
 void jmp_instruction(uint32_t instruction, state *machine_state) {
-	int32_t address = extract_address(instruction);
+	uint8_t address = extract_address(instruction);
 
-	machine_state->pc = (uint8_t)address;	
+	machine_state->pc = &(address);	
 }
 
 void jr_instruction(uint32_t instruction, state *machine_state) {
 	uint8_t r1 = extract_register_index(instruction, 1);
-	machine_state->pc = (uint8_t)machine_state->reg[r1];
+	uint8_t r1Val = (machine_state->reg[r1]);
+	//Does it want r1's value or the address to r1?
+	machine_state->pc = &r1Val;
 }
 
 void jal_instruction(uint32_t instruction, state *machine_state) {
@@ -278,7 +281,9 @@ void jal_instruction(uint32_t instruction, state *machine_state) {
 }
 
 void out_instruction(uint32_t instruction, state *machine_state) {
- 	//To Do!
+ 	uint8_t r1 = extract_register_index(instruction, 1);
+	uint32_t r1Val = machine_state->reg[r1];
+	printf("%u/n", extract(r1Val, END_INSTRUCTION - 7, END_INSTRUCTION));
 }
 
 /*useful code
