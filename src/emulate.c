@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
 
 	printf("*****extract TEST*****\n");
 	printf("extracted: %x\n", extract(0xFC000000,0,5));
-	/*Read contense of binary file into state*/
+	/*Read contents of binary file into state*/
 		/*Read binary file 32 *BITS* At a time*/
 		/*Convert the 32 bits/chars into a uint32_t*/
 		/*store each uint32_t into state.mem*/
@@ -33,26 +33,7 @@ int main(int argc, char **argv) {
 		/*Finish if halt encountered*/
 	return 0;
 }
-/*extract opcode*/
-#define START_OPCODE 0
-#define END_OPCODE 5
-uint8_t extract_opcode(uint32_t instruction) {
-	
-	return extract(instruction,START_OPCODE, END_OPCODE);
-}
-uint32_t extract(uint32_t instruction, uint8_t start, uint8_t end) {
 
-
-	uint32_t mask = 0;
-	start = 31 - start; 
-	end = 31 - end;
-
-	for (int i = end ;i <= start; i++) {
-		mask = mask + ( 1 << i);
-	}
-	printf("\nmask: %x\n", mask); 	
-	return (mask & instruction) >> (end);
-}
 /*initialises a machine state*/
 int init(state *machine_state) {
 	/*
@@ -68,30 +49,178 @@ int init(state *machine_state) {
 	 return 0;
 }
 
-void add_function(uint8_t r1, uint8_t r2, uint8_t r3, state *machine_state){
-	machine_state->mem[r1] = machine_state->mem[r2] + machine_state->mem[r3];
+
+/*extract opcode*/
+#define START_OPCODE 0
+#define END_OPCODE 5
+#define REG_WIDTH 5
+#define END_INSTRUCTION 31
+
+uint32_t extract(uint32_t instruction, uint8_t start, uint8_t end) {
+
+	uint32_t mask = 0;
+	start = 31 - start; 
+	end = 31 - end;
+
+	for (int i = end ;i <= start; i++) {
+		mask = mask + ( 1 << i);
+	}
+	printf("\nmask: %x\n", mask); 	
+	return (mask & instruction) >> (end);
 }
 
-void addi_function(uint8_t r1, uint8_t r2, uint16_t immediate, state *machine_state){
-	machine_state->mem[r1] = machine_state->mem[r2] + immediate;
+uint8_t extract_opcode(uint32_t instruction) {
+	
+	return extract(instruction,START_OPCODE, END_OPCODE);
 }
 
-void sub_function(uint8_t r1, uint8_t r2, uint8_t r3, state *machine_state){
-	machine_state->mem[r1] = machine_state->mem[r2] - machine_state->mem[r3];
+uint8_t extractRegisterIndex(uint32_t instruction, uint8_t number) {
+	return extract(instruction, (END_OPCODE + 1) + REG_WIDTH * (number - 1),		 (END_OPCODE + 1) + REG_WIDTH * (number));		
 }
 
-void subi_function(uint8_t r1, uint8_t r2, uint16_t immediate, state *machine_state){
-	machine_state->mem[r1] = machine_state->mem[r2] - immediate;
+uint32_t extractAddress(uint32_t instruction) {
+	return extract(instruction, (END_OPCODE + 1), END_INSTRUCTION);
 }
 
-void mul_function(uint8_t r1, uint8_t r2, uint8_t r3, state *machine_state){
-	machine_state->mem[r1] = machine_state->mem[r2] * machine_state->mem[r3];
+/*
+Need a signed extension extraction function
+*/
+
+
+
+
+
+/* functions need to return failure/success */
+
+void halt_function(uint32_t instruction, state *machine_state) {
+	//To Do!
 }
 
-void muli_function(uint8_t r1, uint8_t r2, uint16_t immediate, state *machine_state){
-	machine_state->mem[r1] = machine_state->mem[r2] * immediate;
+void incrementPC(state *machine_state) {
+	machine_state->pc = machine_state->pc + 4;
 }
 
+void add_function(uint32_t instruction, state *machine_state){
+	uint8_t r1 = extractRegisterIndex(instruction, 1);
+	uint8_t r2 = extractRegisterIndex(instruction, 2);
+	uint8_t r3 = extractRegisterIndex(instruction, 3);
+
+	machine_state->reg[r1] = machine_state->reg[r2] + machine_state->reg[r3];	
+}
+
+/* functions need to return failure/success */
+void addi_function(uint32_t instruction, state *machine_state){	
+	uint8_t r1 = extractRegisterIndex(instruction, 1);
+	uint8_t r2 = extractRegisterIndex(instruction, 2);
+
+	machine_state->reg[r1] = machine_state->reg[r2] + immediate;
+}
+
+void sub_function(uint32_t instruction, state *machine_state){
+	uint8_t r1 = extractRegisterIndex(instruction, 1);
+	uint8_t r2 = extractRegisterIndex(instruction, 2);
+	uint8_t r3 = extractRegisterIndex(instruction, 3);
+
+	machine_state->reg[r1] = machine_state->reg[r2] - machine_state->reg[r3];
+}
+
+void subi_function(uint32_t instruction, state *machine_state){
+	uint8_t r1 = extractRegisterIndex(instruction, 1);
+	uint8_t r2 = extractRegisterIndex(instruction, 2);
+
+	machine_state->reg[r1] = machine_state->reg[r2] - immediate;
+}
+
+void mul_function(uint32_t instruction, state *machine_state){
+	uint8_t r1 = extractRegisterIndex(instruction, 1);
+	uint8_t r2 = extractRegisterIndex(instruction, 2);
+	uint8_t r3 = extractRegisterIndex(instruction, 3);
+
+	machine_state->reg[r1] = machine_state->reg[r2] * machine_state->reg[r3];
+}
+
+void muli_function(uint32_t instruction, state *machine_state){
+	uint8_t r1 = extractRegisterIndex(instruction, 1);
+	uint8_t r2 = extractRegisterIndex(instruction, 2);
+	
+	machine_state->reg[r1] = machine_state->reg[r2] * immediate;
+}
+
+void lw_function(uint32_t instruction, state *machine_state) {
+	uint8_t r1 = extractRegisterIndex(instruction, 1);
+	uint8_t r2 = extractRegisterIndex(instruction, 2);
+	
+	uint32_t result = machine_state->mem[r2 + immediate];
+	machine_state->reg[r1] = result;
+}
+
+void sw_function(uint32_t instruction, state *machine_state) {
+ 	uint8_t r1 = extractRegisterIndex(instruction, 1);
+	uint8_t r2 = extractRegisterIndex(instruction, 2);
+	 
+	machine_state->mem[r2 + immediate] = machine_state->reg[r1];
+}
+
+void beq_function(uint32_t instruction, state *machine_state) {
+	uint8_t r1 = extractRegisterIndex(instruction, 1);
+	uint8_t r2 = extractRegisterIndex(instruction, 2);
+	
+	if (r1 == r2) incrementPC(machine_state);
+}
+
+void bne_function(uint32_t instruction, state *machine_state) {
+	uint8_t r1 = extractRegisterIndex(instruction, 1);
+	uint8_t r2 = extractRegisterIndex(instruction, 2);
+	
+	if (r1 != r2) incrementPC(machine_state);
+}
+
+void blt_function(uint32_t instruction, state *machine_state) {
+	uint8_t r1 = extractRegisterIndex(instruction, 1);
+	uint8_t r2 = extractRegisterIndex(instruction, 2);
+	
+	if (r1 < r2) incrementPC(machine_state);
+}
+
+void bgt_function(uint32_t instruction, state *machine_state) {
+	uint8_t r1 = extractRegisterIndex(instruction, 1);
+	uint8_t r2 = extractRegisterIndex(instruction, 2);
+	
+	if (r1 > r2) incrementPC(machine_state);
+}
+
+void ble_function(uint32_t instruction, state *machine_state) {
+	uint8_t r1 = extractRegisterIndex(instruction, 1);
+	uint8_t r2 = extractRegisterIndex(instruction, 2);
+	
+	if (r1 <= r2) incrementPC(machine_state);
+}
+
+void bge_function(uint32_t instruction, state *machine_state) {
+	uint8_t r1 = extractRegisterIndex(instruction, 1);
+	uint8_t r2 = extractRegisterIndex(instruction, 2);
+	
+	if (r1 >= r2) incrementPC(machine_state);
+}
+
+void jmp_function(uint32_t instruction, state *machine_state) {
+	int32_t address = extractAddress(instruction);
+
+	machine_state->pc = address;	
+}
+
+void jr_function(uint32_t instruction, state *machine_state) {
+	uint8_t r1 = extractRegisterIndex(instruction, 1);
+	machine_state->pc = machine_state->reg[r1];
+}
+
+void jal_function(uint32_t instruction, state *machine_state) {
+	//To Do!
+}
+
+void out_function(uint32_t instruction, state *machine_state) {
+ 	//To Do!
+}
 
 /*useful code
  * for(int i = 0; i<MEM_SIZE; i++) {
