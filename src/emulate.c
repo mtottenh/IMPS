@@ -12,6 +12,18 @@ typedef struct state {
 	uint32_t reg[NUM_REGS];
 } state;
 
+typedef struct operandsR {
+	uint8_t r1;
+	uint8_t r2;
+	uint8_t r3;
+} operandsR;
+
+typedef struct operandsI {
+	uint8_t r1;
+	uint8_t r2;
+	int16_t immediate;
+} operandsI;
+
 typedef void (*functionPointer)(uint32_t, state*);
 	
 int init(state*);
@@ -103,6 +115,10 @@ void setup_pointers(functionPointer array[]) {
 	array[18] = &out_instruction;	
 }
 
+void increment_pc(state *machine_state) {
+	machine_state->pc = machine_state->pc + 4;
+}
+
 /*extract opcode*/
 #define START_OPCODE 0
 #define END_OPCODE 5
@@ -127,26 +143,50 @@ uint8_t extract_opcode(uint32_t instruction) {
 	return (uint8_t)extract(instruction,START_OPCODE, END_OPCODE);
 }
 
+uint32_t extract_address(uint32_t instruction) {
+	return extract(instruction, (END_OPCODE + 1), END_INSTRUCTION);
+}
+
+operandsR extractR(uint32_t instruction) {
+	operandsR operands;
+
+	uint8_t r1Start = END_OPCODE + 1;
+	uint8_t r2Start = r1Start + REG_WIDTH;
+	uint8_t r3Start = r2Start + REG_WIDTH;
+
+	operands.r1 = extract(instruction, r1Start, r2Start - 1);
+	operands.r2 = extract(instruction, r2Start, r3Start - 1);
+	operands.r3 = extract(instruction, r3Start, r3Start + REG_WIDTH - 1);
+
+	return operands;
+}
+
+operandsI extractI(uint32_t instruction) {
+	operandsI operands;
+
+	uint8_t r1Start = END_OPCODE + 1;
+	uint8_t r2Start = r1Start + REG_WIDTH;
+	uint8_t immediateStart = r2Start + REG_WIDTH;
+
+	operands.r1 = extract(instruction, r1Start, r2Start - 1);
+	operands.r2 = extract(instruction, r2Start, immediateStart - 1 );
+	operands.immediate = extract(instruction, immediateStart, END_INSTRUCTION);
+
+	return operands;
+}
+
+
+/*
 uint8_t extract_register_index(uint32_t instruction, uint8_t number) {
 	return (uint8_t)extract(instruction, (END_OPCODE + 1) + REG_WIDTH * (number - 1),		 (END_OPCODE + 1) + REG_WIDTH * (number));		
 }
 
-uint32_t extract_address(uint32_t instruction) {
-	return extract(instruction, (END_OPCODE + 1), END_INSTRUCTION);
-}
 
 int16_t extract_immediate(uint32_t instruction) {
 	return (int16_t)extract(instruction, (END_OPCODE + 1) + 2*REG_WIDTH, END_INSTRUCTION);
 	//Need to implement a sign extension
 }
-
-
-void increment_pc(state *machine_state) {
-	machine_state->pc = machine_state->pc + 4;
-}
-
-
-
+*/ 
 
 
 /* functions need to return failure/success */
@@ -155,124 +195,91 @@ void halt_instruction(uint32_t instruction, state *machine_state) {
 	//To Do!
 }
 void add_instruction(uint32_t instruction, state *machine_state){
-	uint8_t r1 = extract_register_index(instruction, 1);
-	uint8_t r2 = extract_register_index(instruction, 2);
-	uint8_t r3 = extract_register_index(instruction, 3);
-
-	machine_state->reg[r1] = machine_state->reg[r2] + machine_state->reg[r3];	
+	operandsR operands = extractR(instruction);
+	machine_state->reg[operands.r1] = machine_state->reg[operands.r2] + machine_state->reg[operands.r3];	
 }
 
 /* functions need to return failure/success */
 void addi_instruction(uint32_t instruction, state *machine_state){	
-	uint8_t r1 = extract_register_index(instruction, 1);
-	uint8_t r2 = extract_register_index(instruction, 2);
-	int8_t immediate = extract_immediate(instruction); 
-
-	machine_state->reg[r1] = machine_state->reg[r2] + immediate;
+	operandsI operands = extractI(instruction);
+	machine_state->reg[operands.r1] = machine_state->reg[operands.r2] + operands.immediate;
 }
 
 void sub_instruction(uint32_t instruction, state *machine_state){
-	uint8_t r1 = extract_register_index(instruction, 1);
-	uint8_t r2 = extract_register_index(instruction, 2);
-	uint8_t r3 = extract_register_index(instruction, 3);
-
-	machine_state->reg[r1] = machine_state->reg[r2] - machine_state->reg[r3];
+	operandsR operands = extractR(instruction);
+	machine_state->reg[operands.r1] = machine_state->reg[operands.r2] - machine_state->reg[operands.r3];
 }
 
 void subi_instruction(uint32_t instruction, state *machine_state){
-	uint8_t r1 = extract_register_index(instruction, 1);
-	uint8_t r2 = extract_register_index(instruction, 2);
-	int8_t immediate = extract_immediate(instruction); 
-
-	machine_state->reg[r1] = machine_state->reg[r2] - immediate;
+	operandsI operands = extractI(instruction);
+	machine_state->reg[operands.r1] = machine_state->reg[operands.r2] - operands.immediate;
 }
 
 void mul_instruction(uint32_t instruction, state *machine_state){
-	uint8_t r1 = extract_register_index(instruction, 1);
-	uint8_t r2 = extract_register_index(instruction, 2);
-	uint8_t r3 = extract_register_index(instruction, 3);
-
-	machine_state->reg[r1] = machine_state->reg[r2] * machine_state->reg[r3];
+	operandsR operands = extractR(instruction);
+	machine_state->reg[operands.r1] = machine_state->reg[operands.r2] * machine_state->reg[operands.r3];
 }
 
 void muli_instruction(uint32_t instruction, state *machine_state){
-	uint8_t r1 = extract_register_index(instruction, 1);
-	uint8_t r2 = extract_register_index(instruction, 2);
-	int8_t immediate = extract_immediate(instruction); 
-
-
-	machine_state->reg[r1] = machine_state->reg[r2] * immediate;
+	operandsI operands = extractI(instruction);
+	machine_state->reg[operands.r1] = machine_state->reg[operands.r2] * operands.immediate;
 }
 
 void lw_instruction(uint32_t instruction, state *machine_state) {
-	uint8_t r1 = extract_register_index(instruction, 1);
-	uint8_t r2 = extract_register_index(instruction, 2);
-	int8_t immediate = extract_immediate(instruction); 
-
-	uint32_t result = machine_state->mem[r2 + immediate];
-	machine_state->reg[r1] = result;
+	operandsI operands = extractI(instruction);
+	uint32_t result = machine_state->mem[operands.r2 + operands.immediate];
+	machine_state->reg[operands.r1] = result;
 }
 
 void sw_instruction(uint32_t instruction, state *machine_state) {
- 	uint8_t r1 = extract_register_index(instruction, 1);
-	uint8_t r2 = extract_register_index(instruction, 2);
-	int8_t immediate = extract_immediate(instruction); 
-
- 	machine_state->mem[r2 + immediate] = machine_state->reg[r1];
+	operandsI operands = extractI(instruction);
+ 	machine_state->mem[operands.r2 + operands.immediate] = machine_state->reg[operands.r1];
 }
 
-void beq_instruction(uint32_t instruction, state *machine_state) {
-	uint8_t r1 = extract_register_index(instruction, 1);
-	uint8_t r2 = extract_register_index(instruction, 2);
-	
-	if (r1 == r2) increment_pc(machine_state);
+void beq_instruction(uint32_t instruction, state *machine_state) {	
+	operandsI operands = extractI(instruction);
+	if (machine_state->reg[operands.r1] == machine_state->reg[operands.r2])
+		 increment_pc(machine_state);
 }
 
-void bne_instruction(uint32_t instruction, state *machine_state) {
-	uint8_t r1 = extract_register_index(instruction, 1);
-	uint8_t r2 = extract_register_index(instruction, 2);
-	
-	if (r1 != r2) increment_pc(machine_state);
+void bne_instruction(uint32_t instruction, state *machine_state) {	
+	operandsI operands = extractI(instruction);
+	if (machine_state->reg[operands.r1] != machine_state->reg[operands.r2])
+		 increment_pc(machine_state);
 }
 
 void blt_instruction(uint32_t instruction, state *machine_state) {
-	uint8_t r1 = extract_register_index(instruction, 1);
-	uint8_t r2 = extract_register_index(instruction, 2);
-	
-	if (r1 < r2) increment_pc(machine_state);
+	operandsI operands = extractI(instruction);
+	if (machine_state->reg[operands.r1] < machine_state->reg[operands.r2])
+		 increment_pc(machine_state);
 }
 
-void bgt_instruction(uint32_t instruction, state *machine_state) {
-	uint8_t r1 = extract_register_index(instruction, 1);
-	uint8_t r2 = extract_register_index(instruction, 2);
-	
-	if (r1 > r2) increment_pc(machine_state);
+void bgt_instruction(uint32_t instruction, state *machine_state) {	
+	operandsI operands = extractI(instruction);
+	if (machine_state->reg[operands.r1] > machine_state->reg[operands.r2])
+		 increment_pc(machine_state);
 }
 
-void ble_instruction(uint32_t instruction, state *machine_state) {
-	uint8_t r1 = extract_register_index(instruction, 1);
-	uint8_t r2 = extract_register_index(instruction, 2);
-	
-	if (r1 <= r2) increment_pc(machine_state);
+void ble_instruction(uint32_t instruction, state *machine_state) {	
+	operandsI operands = extractI(instruction);
+	if (machine_state->reg[operands.r1] <= machine_state->reg[operands.r2])
+		 increment_pc(machine_state);
 }
 
 void bge_instruction(uint32_t instruction, state *machine_state) {
-	uint8_t r1 = extract_register_index(instruction, 1);
-	uint8_t r2 = extract_register_index(instruction, 2);
-	
-	if (r1 >= r2) increment_pc(machine_state);
+	operandsI operands = extractI(instruction);
+	if (machine_state->reg[operands.r1] >= machine_state->reg[operands.r2])
+		 increment_pc(machine_state);
 }
 
 void jmp_instruction(uint32_t instruction, state *machine_state) {
 	uint8_t address = extract_address(instruction);
-
-	machine_state->pc = &(address);	
+	machine_state->pc = &address;	
 }
 
 void jr_instruction(uint32_t instruction, state *machine_state) {
-	uint8_t r1 = extract_register_index(instruction, 1);
-	uint8_t r1Val = (machine_state->reg[r1]);
-	//Does it want r1's value or the address to r1?
+	operandsI operands = extractI(instruction);
+	uint8_t r1Val = machine_state->reg[operands.r1];
 	machine_state->pc = &r1Val;
 }
 
@@ -281,9 +288,9 @@ void jal_instruction(uint32_t instruction, state *machine_state) {
 }
 
 void out_instruction(uint32_t instruction, state *machine_state) {
- 	uint8_t r1 = extract_register_index(instruction, 1);
-	uint32_t r1Val = machine_state->reg[r1];
-	printf("%u/n", extract(r1Val, END_INSTRUCTION - 7, END_INSTRUCTION));
+	operandsI operands = extractI(instruction);
+	printf("%u/n", extract(machine_state->reg[operands.r1], END_INSTRUCTION - 7, END_INSTRUCTION));
+	// Is this meant to print the integer value, or actually a sequence of bits?
 }
 
 /*useful code
