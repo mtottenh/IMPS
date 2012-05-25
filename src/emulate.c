@@ -13,12 +13,16 @@ typedef struct state {
 	uint32_t reg[NUM_REGS];
 } state;
 
+typedef void (*functionPointer)(uint32_t, state*);
+	
 int init(state*);
 uint8_t extract_opcode(uint32_t);
 uint32_t extract(uint32_t,uint8_t,uint8_t);
 int main(int argc, char **argv) {
 	state current;
 	init(&current);
+	functionPointer funcPointers[19] = {NULL};
+	setupPointers(funcPointers);
 	printf("*****extract_opcode TEST*****\n");
 	printf("\nopcode: %x\n",extract_opcode(0xFC000000));
 	printf("input: %x\n", 0xFC000000);
@@ -49,6 +53,27 @@ int init(state *machine_state) {
 	 return 0;
 }
 
+void setupPointers(functionPointer array[]) {
+	array[0] = &halt_function;
+	array[1] = &add_function;
+	array[2] = &addi_function;
+	array[3] = &sub_function;
+	array[4] = &subi_function;
+	array[5] = &mul_function;
+	array[6] = &subi_function;
+	array[7] = &lw_function;
+	array[8] = &sw_function;
+	array[9] = &beq_function;
+	array[10] = &bne_function;
+	array[11] = &blt_function;
+	array[12] = &bgt_function;
+	array[13] = &ble_function;
+	array[14] = &bge_function;
+	array[15] = &jmp_function;
+	array[16] = &jr_function;
+	array[17] = &jar_function;
+	array[18] = &out_function;	
+}
 
 /*extract opcode*/
 #define START_OPCODE 0
