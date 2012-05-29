@@ -4,61 +4,7 @@
 #include <string.h>
 #include <math.h>
 #include <unistd.h>
-#define MEM_SIZE 16384
-#define NUM_REGS 32
-
-testing!
-
-typedef struct state {
-	uint8_t *pc;
-	uint32_t mem[MEM_SIZE];
-	uint32_t reg[NUM_REGS];
-} state;
-
-typedef struct operandsR {
-	uint8_t r1;
-	uint8_t r2;
-	uint8_t r3;
-} operandsR;
-
-typedef struct operandsI {
-	uint8_t r1;
-	uint8_t r2;
-	int16_t immediate;
-} operandsI;
-
-typedef void (*functionPointer)(uint32_t, state*);
-	
-int init(state*);
-uint32_t extract(uint32_t,uint8_t,uint8_t);
-uint8_t extract_opcode(uint32_t);
-uint8_t extract_register_index(uint32_t, uint8_t);
-int16_t extract_immediate(uint32_t);
-uint32_t extract_address(uint32_t);
-
-void setup_pointers(functionPointer array[]);
-
-void increment_pc(state*);
-
-void halt_instruction(uint32_t, state *);
-void add_instruction(uint32_t, state *);
-void addi_instruction(uint32_t, state *);	
-void sub_instruction(uint32_t, state *);
-void subi_instruction(uint32_t, state *);
-void mul_instruction(uint32_t, state *);
-void muli_instruction(uint32_t, state *);
-void lw_instruction(uint32_t, state *);
-void sw_instruction(uint32_t, state *);
-void beq_instruction(uint32_t, state *);
-void bne_instruction(uint32_t, state *);
-void blt_instruction(uint32_t, state *);
-void bgt_instruction(uint32_t, state *);
-void ble_instruction(uint32_t, state *);
-void bge_instruction(uint32_t, state *);
-void jmp_instruction(uint32_t, state *);
-void jr_instruction(uint32_t, state *); 
-void jal_instruction(uint32_t, state *);
-void out_instruction(uint32_t, state *);
+#include "emulate.h"
 
 int main(int argc, char **argv) {
 	state current;
@@ -286,19 +232,19 @@ void bge_instruction(uint32_t instruction, state *machine_state) {
 
 void jmp_instruction(uint32_t instruction, state *machine_state) {
 	uint8_t address = extract_address(instruction);
-	machine_state->pc = &address;	
+	*(machine_state->pc) = address;	
 }
 
 void jr_instruction(uint32_t instruction, state *machine_state) {
 	operandsI operands = extractI(instruction);
 	uint8_t r1Val = machine_state->reg[operands.r1];
-	machine_state->pc = &r1Val;
+	*(machine_state->pc) = r1Val;
 }
 
 void jal_instruction(uint32_t instruction, state *machine_state) {
 	uint8_t address = extract_address(instruction);
 	machine_state->reg[30] = *(machine_state->pc) + 4;
-	machine_state->pc = address;
+	*(machine_state->pc) = address;
 }
 
 void out_instruction(uint32_t instruction, state *machine_state) {
