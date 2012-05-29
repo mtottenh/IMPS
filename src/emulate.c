@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
 		opcode = extract_opcode(instruction);
 		printf("opcode = %x, instruction = %x\n", opcode, instruction);
 		funcPointers[opcode](instruction, current);
-	
+
 	} while (opcode != 0);
 
 	return 0;
@@ -296,7 +296,7 @@ void jmp_instruction(uint32_t instruction, state *machine_state) {
 }
 
 void jr_instruction(uint32_t instruction, state *machine_state) {
-	operandsI operands = extractI(instruction);
+	operandsR operands = extractR(instruction);
 	uint32_t r1Val = machine_state->reg[operands.r1];
 	machine_state->pc = &machine_state->mem[r1Val];
 }
@@ -308,7 +308,7 @@ void jal_instruction(uint32_t instruction, state *machine_state) {
 }
 
 void out_instruction(uint32_t instruction, state *machine_state) {
-	operandsI operands = extractI(instruction);
+	operandsR operands = extractR(instruction);
 	uint32_t regVal = machine_state->reg[operands.r1];
 	uint32_t out = extract(regVal, END_INSTRUCTION - 7, END_INSTRUCTION);
 	printf("**%x**", out);
