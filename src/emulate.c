@@ -5,8 +5,6 @@
 #include <math.h>
 #include <unistd.h>
 #include "emulate.h"
-#define MEM_SIZE 16384
-#define NUM_REGS 32
 
 int main(int argc, char **argv) {
 	state current;
