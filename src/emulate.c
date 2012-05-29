@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
@@ -192,8 +193,17 @@ int16_t extract_immediate(uint32_t instruction) {
 /* functions need to return failure/success */
 
 void halt_instruction(uint32_t instruction, state *machine_state) {
-	//To Do!
+	// Terminate by exiting the program
+	// Dump registers to stderr first...
+	fprintf(stderr, "PC: %x", *(machine_state->pc));
+	
+	for(int i = 0; i < NUM_REGS; i++) {
+		fprintf(stderr, "R%d: %x", i, machine_state->reg[i]);
+	}	
+	
+	exit(EXIT_SUCCESS);
 }
+
 void add_instruction(uint32_t instruction, state *machine_state){
 	operandsR operands = extractR(instruction);
 	machine_state->reg[operands.r1] = machine_state->reg[operands.r2] + machine_state->reg[operands.r3];	
@@ -284,7 +294,9 @@ void jr_instruction(uint32_t instruction, state *machine_state) {
 }
 
 void jal_instruction(uint32_t instruction, state *machine_state) {
-	//To Do!
+	uint8_t address = extract_address(instruction);
+	machine_state->reg[30] = *(machine_state->pc) + 4;
+	machine_state->pc = address;
 }
 
 void out_instruction(uint32_t instruction, state *machine_state) {
