@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #define MEM_SIZE 16384
 #define NUM_REGS 32
-
+#include <arpa/inet.h>
 typedef struct state {
 	uint8_t *pc;
 	uint32_t mem[MEM_SIZE];
@@ -57,6 +57,11 @@ void jr_instruction(uint32_t, state *);
 void jal_instruction(uint32_t, state *);
 void out_instruction(uint32_t, state *);
 
+uint32_t convert(uint32_t val) {
+	val = ((val << 8) & 0xFF00FF00) | ((val >> 8) & 0xFF00FF );
+	return (val << 16) | ( val >> 16);
+}
+	
 int main(int argc, char **argv) {
 
 	state* current = malloc(sizeof(state));
@@ -67,12 +72,12 @@ int main(int argc, char **argv) {
 		return 1; //exit failure
 	}	
 
-	FILE *binaryFile;
 	init(current);
+	
 	functionPointer funcPointers[19] = {NULL};
 	setup_pointers(funcPointers);
 
-	
+	FILE *binaryFile;
 	//Get binary file path
 	char *binaryFilePath = argv[1];
 
@@ -87,9 +92,10 @@ int main(int argc, char **argv) {
 
 	//Read binary file into the current state's memory
 	fread(current->pc, sizeof(uint32_t), MEM_SIZE, binaryFile);
-	
 	fclose(binaryFile);
-
+	for (int i = 0; i < MEM_SIZE; i++ ) {
+		current->mem[i] = convert(current->mem[i]);
+	}
 	/*Start decode execute loop*/
 
 	uint8_t opcode;
