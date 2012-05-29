@@ -6,9 +6,6 @@
 #include "emulate.h"
 #include <stdlib.h>
 
-void increment_pc(state*, int16_t);
-
-
 uint32_t convert(uint32_t val) {
 	val = ((val << 8) & 0xFF00FF00) | ((val >> 8) & 0xFF00FF );
 	return (val << 16) | ( val >> 16);
@@ -25,7 +22,6 @@ int main(int argc, char **argv) {
 	}	
 
 	init(current);
-	
 	functionPointer funcPointers[19] = {NULL};
 	setup_pointers(funcPointers);
 
@@ -43,11 +39,11 @@ int main(int argc, char **argv) {
 	}
 
 	//Read binary file into the current state's memory
-	fread(current->pc, sizeof(uint32_t), MEM_SIZE, binaryFile);
+	fread(current->pc, sizeof(uint8_t), MEM_SIZE, binaryFile);
 	fclose(binaryFile);
-	for (int i = 0; i < MEM_SIZE; i++ ) {
-		current->mem[i] = convert(current->mem[i]);
-	}
+	//for (int i = 0; i < MEM_SIZE; i++ ) {
+	//	current->mem[i] = convert(current->mem[i]);
+//	}
 	/*Start decode execute loop*/
 
 	uint8_t opcode;
@@ -71,10 +67,10 @@ int init(state *machine_state) {
 	 * PC is a pointer to 8 bits of memory;
 	 * has to be byte addressable
 	 */
-	 machine_state->pc = (uint8_t *)machine_state->mem;
+	 machine_state->pc = machine_state->mem;
 
 	 /* Initialise memory to 0 - see man 3 memset */
-	 memset(machine_state->mem, 0, sizeof(uint32_t)*MEM_SIZE);
+	 memset(machine_state->mem, 0, sizeof(uint8_t)*MEM_SIZE);
 	 memset(machine_state->reg, 0, sizeof(uint32_t)*NUM_REGS);
 	 return 0;
 }
@@ -156,8 +152,13 @@ operandsI extractI(uint32_t instruction) {
 
 	operands.r1 = extract(instruction, r1Start, r2Start - 1);
 	operands.r2 = extract(instruction, r2Start, immediateStart - 1 );
-	operands.immediate = extract(instruction, immediateStart, END_INSTRUCTION);
-
+	operands.immediate = (int16_t)extract(instruction, immediateStart, END_INSTRUCTION);
+	
+//	if ( extract(operands.immediate,0,0) ) {
+//
+//		operands.immediate &= 0x7FFF;
+//		operands.immediate = -operands.immediate;
+//	}
 	return operands;
 }
 
@@ -180,10 +181,10 @@ int16_t extract_immediate(uint32_t instruction) {
 void halt_instruction(uint32_t instruction, state *machine_state) {
 	// Terminate by exiting the program
 	// Dump registers to stderr first...
-	fprintf(stderr, "PC: %x", *(machine_state->pc));
+	fprintf(stderr, "PC: %x\n", *(machine_state->pc));
 	
 	for(int i = 0; i < NUM_REGS; i++) {
-		fprintf(stderr, "R%d: %x", i, machine_state->reg[i]);
+		fprintf(stderr, "R%d: %x\n", i, machine_state->reg[i]);
 	}	
 	
 	exit(EXIT_SUCCESS);
@@ -202,7 +203,7 @@ void addi_instruction(uint32_t instruction, state *machine_state){
 	increment_pc(machine_state, 1);
 }
 
-void sub_instruction(uint32_t instruction, state *machine_state){
+void sub_instruction(uint32_t instruction, state *machine_state) {
 	operandsR operands = extractR(instruction);
 	machine_state->reg[operands.r1] = machine_state->reg[operands.r2] - machine_state->reg[operands.r3];
 	increment_pc(machine_state, 1);
@@ -228,74 +229,99 @@ void muli_instruction(uint32_t instruction, state *machine_state){
 
 void lw_instruction(uint32_t instruction, state *machine_state) {
 	operandsI operands = extractI(instruction);
-	uint32_t result = machine_state->mem[operands.r2 + operands.immediate];
-	machine_state->reg[operands.r1] = result;
+	printf( "Reg[%d] : %d\t", operands.r1,machine_state->reg[operands.r1]);
+        printf( " Reg[%d] : %d\t", operands.r2,machine_state->reg[operands.r2]);
+	uint32_t r2 = machine_state->reg[operands.r2];	
+	printf("mem 4 : %x" ,machine_state->mem[1]);
+	uint32_t *result = &machine_state->mem[r2 + operands.immediate];
+	machine_state->reg[operands.r1] = *result;
+	printf(" Register 1: %d\n" , machine_state->reg[operands.r1]);
 	increment_pc(machine_state, 1);
 }
 
 void sw_instruction(uint32_t instruction, state *machine_state) {
 	operandsI operands = extractI(instruction);
- 	machine_state->mem[operands.r2 + operands.immediate] = machine_state->reg[operands.r1];
-	increment_pc(machine_state, operands.immediate);
+	uint32_t r2 = machine_state->reg[operands.r2];
+ 	uint32_t *pointer = &machine_state->mem[r2 + operands.immediate];
+	*pointer  = machine_state->reg[operands.r1];
+	increment_pc(machine_state, 1);
 }
 
 void beq_instruction(uint32_t instruction, state *machine_state) {	
 	operandsI operands = extractI(instruction);
 	if (machine_state->reg[operands.r1] == machine_state->reg[operands.r2])
 		increment_pc(machine_state, operands.immediate);
+	else
+		increment_pc(machine_state,1);
 }
 
 void bne_instruction(uint32_t instruction, state *machine_state) {	
 	operandsI operands = extractI(instruction);
 	if (machine_state->reg[operands.r1] != machine_state->reg[operands.r2])
 		increment_pc(machine_state, operands.immediate);
+	else
+		increment_pc(machine_state,1);
 }
 
 void blt_instruction(uint32_t instruction, state *machine_state) {
 	operandsI operands = extractI(instruction);
 	if (machine_state->reg[operands.r1] < machine_state->reg[operands.r2])
 		 increment_pc(machine_state, operands.immediate);
+	else
+		increment_pc(machine_state,1);
 }
 
 void bgt_instruction(uint32_t instruction, state *machine_state) {	
 	operandsI operands = extractI(instruction);
 	if (machine_state->reg[operands.r1] > machine_state->reg[operands.r2])
 		 increment_pc(machine_state, operands.immediate);
+	else
+		increment_pc(machine_state,1);
 }
 
 void ble_instruction(uint32_t instruction, state *machine_state) {	
 	operandsI operands = extractI(instruction);
 	if (machine_state->reg[operands.r1] <= machine_state->reg[operands.r2])
 		 increment_pc(machine_state, operands.immediate);
+	else
+		increment_pc(machine_state,1);
 }
 
 void bge_instruction(uint32_t instruction, state *machine_state) {
 	operandsI operands = extractI(instruction);
 	if (machine_state->reg[operands.r1] >= machine_state->reg[operands.r2])
 		 increment_pc(machine_state, operands.immediate);
+	else	
+		increment_pc(machine_state,1);
 }
 
 void jmp_instruction(uint32_t instruction, state *machine_state) {
 	uint8_t address = extract_address(instruction);
-	*(machine_state->pc) = address;	
+	/*Jump to 0 + address, quick hack to make jumps work*/
+	machine_state->pc = (uint8_t *)machine_state->mem;
+	machine_state->pc = machine_state->pc + address;	
 }
 
 void jr_instruction(uint32_t instruction, state *machine_state) {
 	operandsI operands = extractI(instruction);
 	uint8_t r1Val = machine_state->reg[operands.r1];
-	*(machine_state->pc) = r1Val;
+	machine_state->pc = (uint8_t *)machine_state->mem;
+	machine_state->pc = machine_state->pc + r1Val;
 }
 
 void jal_instruction(uint32_t instruction, state *machine_state) {
 	uint8_t address = extract_address(instruction);
-	machine_state->reg[30] = *(machine_state->pc) + 4;
-	*(machine_state->pc) = address;
+	machine_state->reg[31] = machine_state->pc + 4;
+	machine_state->pc = (uint8_t *)machine_state->mem;
+	machine_state->pc = machine_state->pc + address;
 }
 
 void out_instruction(uint32_t instruction, state *machine_state) {
 	operandsI operands = extractI(instruction);
-	printf("%u/n", extract(machine_state->reg[operands.r1], END_INSTRUCTION - 7, END_INSTRUCTION));
-	// Is this meant to print the integer value, or actually a sequence of bits?
+	uint32_t out = extract(machine_state->reg[operands.r1], END_INSTRUCTION - 7, END_INSTRUCTION);
+	printf("**%x**",out);
+	increment_pc(machine_state,1);	
+// Is this meant to print the integer value, or actually a sequence of bits?
 }
 
 /*useful code

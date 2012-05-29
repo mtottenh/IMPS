@@ -1,10 +1,10 @@
-#define MEM_SIZE 16384
+#define MEM_SIZE 65536
 #define NUM_REGS 32
 
 // Structure for the emulators state
 typedef struct state {
 	uint8_t *pc;
-	uint32_t mem[MEM_SIZE];
+	uint8_t mem[MEM_SIZE];
 	uint32_t reg[NUM_REGS];
 } state;
 
@@ -32,7 +32,7 @@ uint32_t extract_address(uint32_t);
 
 void setup_pointers(functionPointer array[]);
 
-void increment_pc(state*);
+void increment_pc(state*,int16_t);
 
 // Prototypes for opcode instructions
 void halt_instruction(uint32_t, state *);
