@@ -2,28 +2,65 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <math.h>
 #include <unistd.h>
 #include "emulate.h"
+#include <stdlib.h>
 
+void increment_pc(state*, int16_t);
+
+
+uint32_t convert(uint32_t val) {
+	val = ((val << 8) & 0xFF00FF00) | ((val >> 8) & 0xFF00FF );
+	return (val << 16) | ( val >> 16);
+}
+	
 int main(int argc, char **argv) {
-	state current;
-	//Need to make state allocated on heap rather than on stack!
-	init(&current);
+
+	state* current = malloc(sizeof(state));
+	
+	if (current == NULL)
+	{
+		perror("Couldn't allocate memory to state");
+		return 1; //exit failure
+	}	
+
+	init(current);
+	
 	functionPointer funcPointers[19] = {NULL};
 	setup_pointers(funcPointers);
-	printf("*****extract_opcode TEST*****\n");
-	printf("\nopcode: %x\n",extract_opcode(0xFC000000));
-	printf("input: %x\n", 0xFC000000);
 
-	printf("*****extract TEST*****\n");
-	printf("extracted: %x\n", extract(0xFC000000,0,5));
-	/*Read contents of binary file into state*/
-		/*Read binary file 32 *BITS* At a time*/
-		/*Convert the 32 bits/chars into a uint32_t*/
-		/*store each uint32_t into state.mem*/
+	FILE *binaryFile;
+	//Get binary file path
+	char *binaryFilePath = argv[1];
+
+	//Open binary file
+	if((binaryFile = fopen(binaryFilePath, "rb")) == NULL)
+	{
+		perror("Couldn't open file specified at runtime");
+		
+		return EXIT_FAILURE;
+		//exit failure
+	}
+
+	//Read binary file into the current state's memory
+	fread(current->pc, sizeof(uint32_t), MEM_SIZE, binaryFile);
+	fclose(binaryFile);
+	for (int i = 0; i < MEM_SIZE; i++ ) {
+		current->mem[i] = convert(current->mem[i]);
+	}
 	/*Start decode execute loop*/
-		/*Finish if halt encountered*/
+
+	uint8_t opcode;
+	
+	do {
+
+		uint32_t instruction = *((uint32_t*) current->pc);
+		opcode = extract_opcode(instruction);
+		printf("opcode = %x, instruction = %x\n", opcode, instruction);
+		funcPointers[opcode](instruction, current);
+	
+	} while (opcode != 0);
+
 	return 0;
 }
 
@@ -64,8 +101,8 @@ void setup_pointers(functionPointer array[]) {
 	array[18] = &out_instruction;	
 }
 
-void increment_pc(state *machine_state) {
-	machine_state->pc = machine_state->pc + 4;
+void increment_pc(state *machine_state, int16_t i) {
+	machine_state->pc = machine_state->pc + (4 * i);
 }
 
 /*extract opcode*/
@@ -83,7 +120,7 @@ uint32_t extract(uint32_t instruction, uint8_t start, uint8_t end) {
 	for (int i = end ;i <= start; i++) {
 		mask = mask + (1 << i);
 	}
-	printf("\nmask: %x\n", mask); 	
+ 	
 	return (mask & instruction) >> (end);
 }
 
@@ -154,80 +191,88 @@ void halt_instruction(uint32_t instruction, state *machine_state) {
 
 void add_instruction(uint32_t instruction, state *machine_state){
 	operandsR operands = extractR(instruction);
-	machine_state->reg[operands.r1] = machine_state->reg[operands.r2] + machine_state->reg[operands.r3];	
+	machine_state->reg[operands.r1] = machine_state->reg[operands.r2] + machine_state->reg[operands.r3];
+	increment_pc(machine_state, 1);	
 }
 
 /* functions need to return failure/success */
 void addi_instruction(uint32_t instruction, state *machine_state){	
 	operandsI operands = extractI(instruction);
 	machine_state->reg[operands.r1] = machine_state->reg[operands.r2] + operands.immediate;
+	increment_pc(machine_state, 1);
 }
 
 void sub_instruction(uint32_t instruction, state *machine_state){
 	operandsR operands = extractR(instruction);
 	machine_state->reg[operands.r1] = machine_state->reg[operands.r2] - machine_state->reg[operands.r3];
+	increment_pc(machine_state, 1);
 }
 
 void subi_instruction(uint32_t instruction, state *machine_state){
 	operandsI operands = extractI(instruction);
 	machine_state->reg[operands.r1] = machine_state->reg[operands.r2] - operands.immediate;
+	increment_pc(machine_state, 1);
 }
 
 void mul_instruction(uint32_t instruction, state *machine_state){
 	operandsR operands = extractR(instruction);
 	machine_state->reg[operands.r1] = machine_state->reg[operands.r2] * machine_state->reg[operands.r3];
+	increment_pc(machine_state, 1);
 }
 
 void muli_instruction(uint32_t instruction, state *machine_state){
 	operandsI operands = extractI(instruction);
 	machine_state->reg[operands.r1] = machine_state->reg[operands.r2] * operands.immediate;
+	increment_pc(machine_state, 1);
 }
 
 void lw_instruction(uint32_t instruction, state *machine_state) {
 	operandsI operands = extractI(instruction);
 	uint32_t result = machine_state->mem[operands.r2 + operands.immediate];
 	machine_state->reg[operands.r1] = result;
+	increment_pc(machine_state, 1);
 }
 
 void sw_instruction(uint32_t instruction, state *machine_state) {
 	operandsI operands = extractI(instruction);
  	machine_state->mem[operands.r2 + operands.immediate] = machine_state->reg[operands.r1];
+	increment_pc(machine_state, operands.immediate);
 }
 
 void beq_instruction(uint32_t instruction, state *machine_state) {	
 	operandsI operands = extractI(instruction);
 	if (machine_state->reg[operands.r1] == machine_state->reg[operands.r2])
-		 increment_pc(machine_state);
+		increment_pc(machine_state, operands.immediate);
 }
 
 void bne_instruction(uint32_t instruction, state *machine_state) {	
 	operandsI operands = extractI(instruction);
 	if (machine_state->reg[operands.r1] != machine_state->reg[operands.r2])
-		 increment_pc(machine_state);
+		increment_pc(machine_state, operands.immediate);
 }
 
 void blt_instruction(uint32_t instruction, state *machine_state) {
 	operandsI operands = extractI(instruction);
 	if (machine_state->reg[operands.r1] < machine_state->reg[operands.r2])
-		 increment_pc(machine_state);
+		 increment_pc(machine_state, operands.immediate);
 }
 
 void bgt_instruction(uint32_t instruction, state *machine_state) {	
 	operandsI operands = extractI(instruction);
 	if (machine_state->reg[operands.r1] > machine_state->reg[operands.r2])
-		 increment_pc(machine_state);
+		 increment_pc(machine_state, operands.immediate);
 }
 
 void ble_instruction(uint32_t instruction, state *machine_state) {	
 	operandsI operands = extractI(instruction);
 	if (machine_state->reg[operands.r1] <= machine_state->reg[operands.r2])
-		 increment_pc(machine_state);
+		 increment_pc(machine_state, operands.immediate);
 }
 
 void bge_instruction(uint32_t instruction, state *machine_state) {
 	operandsI operands = extractI(instruction);
 	if (machine_state->reg[operands.r1] >= machine_state->reg[operands.r2])
-		 increment_pc(machine_state);
+		 increment_pc(machine_state, operands.immediate);
 }
 
 void jmp_instruction(uint32_t instruction, state *machine_state) {
