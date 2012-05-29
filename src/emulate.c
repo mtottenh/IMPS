@@ -361,10 +361,8 @@ void bge_instruction(uint32_t instruction, State *machine_state) {
 
 void jmp_instruction(uint32_t instruction, State *machine_state) {
 	/* Jump to an address by setting the PC to a given operand. */
-	uint8_t address = extract_address(instruction);
-	/*Jump to 0 + address, quick hack to make jumps work*/
-	machine_state->pc = (uint8_t *)machine_state->mem;
-	machine_state->pc = machine_state->pc + address;	
+	uint32_t address = extract_address(instruction);
+	machine_state->pc = &machine_state->mem[address];	
 }
 
 void jr_instruction(uint32_t instruction, State *machine_state) {
@@ -373,9 +371,8 @@ void jr_instruction(uint32_t instruction, State *machine_state) {
 	 * register operand.
 	 */
 	OperandsI operands = extract_i(instruction);
-	uint8_t r1Val = machine_state->reg[operands.r1];
-	machine_state->pc = (uint8_t *)machine_state->mem;
-	machine_state->pc = machine_state->pc + r1Val;
+	uint32_t r1Val = machine_state->reg[operands.r1];
+	machine_state->pc = &machine_state->mem[r1Val];
 }
 
 void jal_instruction(uint32_t instruction, State *machine_state) {
@@ -388,10 +385,10 @@ void jal_instruction(uint32_t instruction, State *machine_state) {
 	machine_state->pc = &machine_state->mem[address];
 }
 
-<<<<<<< HEAD
-void out_instruction(uint32_t instruction, state *machine_state) {
+
+void out_instruction(uint32_t instruction, State *machine_state) {
 	/* Prints the least significant eight bits of R1 to stdout. */	
-	operandsR operands = extractR(instruction);
+	OperandsR operands = extract_r(instruction);
 	uint32_t regVal = machine_state->reg[operands.r1];
 	uint32_t out = extract(regVal, END_INSTRUCTION - 7, END_INSTRUCTION);
 	printf("**%x**", out);
