@@ -369,7 +369,15 @@ void jr_instruction(uint32_t instruction, State *machine_state) {
 	 * register operand.
 	 */
 	OperandsR operands = extract_r(instruction);
-	machine_state->pc = &machine_state->reg[operands.r1];
+	printf("Jumping to: %x",machine_state->reg[operands.r1]);
+	/* this is wrong, it should be jumping to 
+	 * somewhere in memory not the address of a register!
+	 *
+	 *	machine_state->pc = &machine_state->reg[operands.r1];
+	 * The desired behaviour is coded below!
+	 */
+	uint8_t address = machine_state->reg[operands.r1];
+	machine_state->pc = &machine_state->mem[address];
 }
 
 void jal_instruction(uint32_t instruction, State *machine_state) {
