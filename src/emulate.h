@@ -1,3 +1,6 @@
+#ifndef _EMULATE_H_
+#define _EMULATE_H_
+
 #define MEM_SIZE 65536
 #define NUM_REGS 34
 
@@ -54,3 +57,4 @@ void jmp_instruction(uint32_t, State*);
 void jr_instruction(uint32_t, State*); 
 void jal_instruction(uint32_t, State*);
 void out_instruction(uint32_t, State*);
+#endif
