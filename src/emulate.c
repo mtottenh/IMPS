@@ -61,7 +61,8 @@ int main(int argc, char **argv) {
 		}
 
 		else {
-			fprintf(stderr, "*** Invalid opcode '%d'. Instruction ignored.\n", opcode);
+			fprintf(stderr, "*** Invalid opcode '%d'. "
+				"Instruction ignored.\n", opcode);
 		}
 
 	} while (opcode != 0);
@@ -114,6 +115,15 @@ void setup_pointers(FunctionPointer array[]) {
 /* Checks whether a given opcode is valid. */
 int is_valid_opcode(uint8_t opcode) {
 	return opcode >= 0 && opcode < NUM_OPCODES;
+}
+
+/* Checks whether access to a memory location is valid. If not, terminate. */
+void check_mem_access(int location) {
+	if (location < 0 || location >= MEM_SIZE) {
+		fprintf(stderr, "*** Segmentation fault. Cannot access memory "
+			"location %d. Terminating.", location);
+		exit(EXIT_FAILURE);	
+	}
 }
 
 /* Increments the program counter by a given number of steps */
@@ -275,7 +285,11 @@ void lw_instruction(uint32_t instruction, State *machine_state) {
 	 */
 	OperandsI operands = extract_i(instruction);
 	uint32_t r2 = machine_state->reg[operands.r2];	
-	uint32_t *result = &machine_state->mem[r2 + operands.immediate];
+	
+	int location = r2 + operands.immediate;
+	check_mem_access(location);
+
+	uint32_t *result = &machine_state->mem[location];
 	machine_state->reg[operands.r1] = *result;
 	increment_pc(machine_state, 1);
 }
@@ -288,7 +302,11 @@ void sw_instruction(uint32_t instruction, State *machine_state) {
 	 */
 	OperandsI operands = extract_i(instruction);
 	uint32_t r2 = machine_state->reg[operands.r2];
- 	uint32_t *pointer = &machine_state->mem[r2 + operands.immediate];
+
+	int location = r2 + operands.immediate;
+	check_mem_access(location);
+	
+ 	uint32_t *pointer = &machine_state->mem[location];
 	*pointer  = machine_state->reg[operands.r1];
 	increment_pc(machine_state, 1);
 }

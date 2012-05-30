@@ -35,6 +35,8 @@ uint8_t extract_opcode(uint32_t);
 uint32_t extract_address(uint32_t);
 
 int is_valid_opcode(uint8_t);
+void check_mem_access(int);
+
 void setup_pointers(FunctionPointer array[]);
 
 void increment_pc(State*, int16_t);
