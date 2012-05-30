@@ -182,12 +182,27 @@ OperandsI extract_i(uint32_t instruction) {
 /* Functions corresponding to the IMPS opcode functions. */
 
 void halt_instruction(uint32_t instruction, State *machine_state) {
-	/* Print the values of PC and registers, then terminate the program. */
-	fprintf(stderr, "PC: %x\n", *(machine_state->pc));
+	/* Print the values of PC and registers. */
+	uint8_t current_cols = 1;
+	fprintf(stderr, " PC: 0x%x\t", *(machine_state->pc));
 	
 	for(int i = 0; i < NUM_REGS; i++) {
-		fprintf(stderr, "R%d: %x\n", i, machine_state->reg[i]);
-	}	
+		fprintf(stderr, "R%02d: 0x%x", i, machine_state->reg[i]);
+		current_cols++;
+
+		if (current_cols >= 4) {
+			fprintf(stderr, "\n");
+			current_cols = 0;
+		}
+		else {
+			fprintf(stderr, "\t");
+		}
+	}
+
+	fprintf(stderr, "\n");
+
+	/* Program needs to terminate on halt. */
+	exit(EXIT_SUCCESS);
 }
 
 void add_instruction(uint32_t instruction, State *machine_state) {
@@ -378,9 +393,14 @@ void out_instruction(uint32_t instruction, State *machine_state) {
 	uint32_t regVal = machine_state->reg[operands.r1];
 	uint32_t out = extract(regVal, END_INSTRUCTION - 7, END_INSTRUCTION);
 	
-	printf("*%x*", out);
+	/* Debug lines - remove both before submission. */
+	printf("** HEX OUTPUT (DEBUG)  ** : %x\n", out);
+	printf("** CHAR OUTPUT (RELEASE) ** :");
+	/* End debug lines */
 
-	increment_pc(machine_state,1);	
+	printf("%c", out);
+	
+	increment_pc(machine_state, 1);	
 }
 
 /*useful code
