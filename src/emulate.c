@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 	State* current = malloc(sizeof(State));
 	if (current == NULL)
 	{
-		perror("Couldn't allocate memory to state");
+		perror("*** Couldn't allocate memory to machine state. Terminating");
 		return EXIT_FAILURE;
 	}	
 
@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
 	/* Open binary file. */
 	if((binary_file = fopen(file_path, "rb")) == NULL)
 	{
-		perror("Couldn't open file specified at runtime");
+		perror("*** Couldn't open file specified at runtime. Terminating");
 		return EXIT_FAILURE;
 	}
 
@@ -53,8 +53,17 @@ int main(int argc, char **argv) {
 	do {
 		uint32_t instruction = *((uint32_t*) current->pc);
 		opcode = extract_opcode(instruction);
-		printf("PC = %u, opcode = %u, instruction = %x\n", *(current->pc),opcode, instruction);
-		func_pointers[opcode](instruction, current);
+
+		if (is_valid_opcode(opcode)) {
+			printf("PC = %u, opcode = %u, instruction = %x\n", 
+				*(current->pc),opcode, instruction);
+			func_pointers[opcode](instruction, current);
+		}
+
+		else {
+			fprintf(stderr, "*** Invalid opcode '%d'. Instruction ignored.\n", opcode);
+		}
+
 	} while (opcode != 0);
 
 	return EXIT_SUCCESS;
@@ -100,6 +109,11 @@ void setup_pointers(FunctionPointer array[]) {
 	array[16] = &jr_instruction;
 	array[17] = &jal_instruction;
 	array[18] = &out_instruction;
+}
+
+/* Checks whether a given opcode is valid. */
+int is_valid_opcode(uint8_t opcode) {
+	return opcode >= 0 && opcode < NUM_OPCODES;
 }
 
 /* Increments the program counter by a given number of steps */

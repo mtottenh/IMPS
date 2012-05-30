@@ -3,6 +3,7 @@
 
 #define MEM_SIZE 65536
 #define NUM_REGS 32
+#define NUM_OPCODES 19
 
 /* Structure for the emulators state. */
 typedef struct State {
@@ -33,6 +34,7 @@ uint32_t extract(uint32_t,uint8_t,uint8_t);
 uint8_t extract_opcode(uint32_t);
 uint32_t extract_address(uint32_t);
 
+int is_valid_opcode(uint8_t);
 void setup_pointers(FunctionPointer array[]);
 
 void increment_pc(State*, int16_t);
