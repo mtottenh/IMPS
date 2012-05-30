@@ -1,5 +1,5 @@
 #define MEM_SIZE 65536
-#define NUM_REGS 32
+#define NUM_REGS 34
 
 /* Structure for the emulators state. */
 typedef struct State {
