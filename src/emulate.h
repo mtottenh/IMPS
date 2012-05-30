@@ -37,6 +37,7 @@ uint32_t extract_address(uint32_t);
 /* Input validation functions. */
 int is_valid_opcode(uint8_t);
 void check_mem_access(int);
+void check_address(uint32_t);
 
 void setup_pointers(FunctionPointer array[]);
 

@@ -122,8 +122,17 @@ int is_valid_opcode(uint8_t opcode) {
 void check_mem_access(int location) {
 	if (location < 0 || location >= MEM_SIZE) {
 		fprintf(stderr, "*** Segmentation fault. Cannot access memory "
-			"location '%d'. Terminating.", location);
+			"location '%d'. Terminating.\n", location);
 		exit(EXIT_FAILURE);	
+	}
+}
+
+/* Checks whether an address is valid. If not, terminate. */
+void check_address(uint32_t address) {
+	if(address >= (8 * MEM_SIZE)) {
+		fprintf(stderr, "*** Segmentation fault. Cannot access memory "
+			"address '%u'. Terminating.\n", address);
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -395,6 +404,10 @@ void bge_instruction(uint32_t instruction, State *machine_state) {
 void jmp_instruction(uint32_t instruction, State *machine_state) {
 	/* Jump to an address by setting the PC to a given operand. */
 	uint32_t address = extract_address(instruction);
+
+	/* Check whether the address is valid. If not, terminate. */
+	check_address(address);
+
 	machine_state->pc = &machine_state->mem[address];	
 }
 
@@ -413,6 +426,10 @@ void jal_instruction(uint32_t instruction, State *machine_state) {
 	 * in R31 and set PC to a given operand.
 	 */
 	uint8_t address = extract_address(instruction);
+	
+	/* Check whether the address is valid. If not, terminate. */
+	check_address(address);
+
 	machine_state->reg[31] = (machine_state->pc + 4);
 	machine_state->pc = &machine_state->mem[address];
 }
@@ -426,9 +443,11 @@ void out_instruction(uint32_t instruction, State *machine_state) {
 	
 	/* Debug lines - remove both before submission. */
 	printf("** HEX OUTPUT (DEBUG)  ** : %x\n", out);
-	printf("** CHAR OUTPUT (RELEASE) ** :");
+	printf("** BINARY OUTPUT (RELEASE) ** :");
 	/* End debug lines */
 
+	/* ------ THIS IS UNRELIABLE AND MAY NOT ALWAYS WORK ---- */
+	/* TODO - Use freopen() for binary mode. Sean will do this. */
 	printf("%c", out);
 	
 	increment_pc(machine_state, 1);	
