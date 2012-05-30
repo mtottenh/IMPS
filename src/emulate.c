@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 	do {
 		uint32_t instruction = *((uint32_t*) current->pc);
 		opcode = extract_opcode(instruction);
-		printf("opcode = %x, instruction = %x\n", opcode, instruction);
+		printf("opcode = %u, instruction = %x\n", opcode, instruction);
 		func_pointers[opcode](instruction, current);
 	} while (opcode != 0);
 
@@ -103,7 +103,7 @@ void setup_pointers(FunctionPointer array[]) {
 	array[15] = &jmp_instruction;
 	array[16] = &jr_instruction;
 	array[17] = &jal_instruction;
-	array[18] = &out_instruction;	
+	array[18] = &out_instruction;
 }
 
 /* Increments the program counter by a given number of steps */
@@ -197,8 +197,6 @@ void halt_instruction(uint32_t instruction, State *machine_state) {
 	for(int i = 0; i < NUM_REGS; i++) {
 		fprintf(stderr, "R%d: %x\n", i, machine_state->reg[i]);
 	}	
-	
-	exit(EXIT_SUCCESS);
 }
 
 void add_instruction(uint32_t instruction, State *machine_state) {
@@ -370,9 +368,8 @@ void jr_instruction(uint32_t instruction, State *machine_state) {
 	 * Jump to an address by setting the PC to the value of a given
 	 * register operand.
 	 */
-	OperandsI operands = extract_i(instruction);
-	uint32_t r1Val = machine_state->reg[operands.r1];
-	machine_state->pc = &machine_state->mem[r1Val];
+	OperandsR operands = extract_r(instruction);
+	machine_state->pc = &machine_state->reg[operands.r1];
 }
 
 void jal_instruction(uint32_t instruction, State *machine_state) {
@@ -381,7 +378,7 @@ void jal_instruction(uint32_t instruction, State *machine_state) {
 	 * in R31 and set PC to a given operand.
 	 */
 	uint8_t address = extract_address(instruction);
-	machine_state->reg[31] = machine_state->pc + 4;
+	machine_state->reg[31] = *(machine_state->pc + 4);
 	machine_state->pc = &machine_state->mem[address];
 }
 
