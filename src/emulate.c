@@ -47,15 +47,11 @@ int main(int argc, char **argv) {
 	fread(current->pc, sizeof(uint8_t), MEM_SIZE, binary_file);
 	fclose(binary_file);
 
-	//for (int i = 0; i < MEM_SIZE; i++ ) {
-	//	current->mem[i] = convert(current->mem[i]);
-//	}
 
 	/* Begin decode execute loop */
 	uint8_t opcode;
 	do {
 		uint32_t instruction = *((uint32_t*) current->pc);
-		printf("\nOpcode before: %u", opcode);
 		opcode = extract_opcode(instruction);
 		printf("PC = %u, opcode = %u, instruction = %x\n", *(current->pc),opcode, instruction);
 		func_pointers[opcode](instruction, current);
@@ -135,9 +131,7 @@ uint32_t extract(uint32_t instruction, uint8_t start, uint8_t end) {
 
 /* Extacts the opcode from a given instruction via a call to extract. */
 uint8_t extract_opcode(uint32_t instruction) {
-//	printf("\nInstruction: %x",instruction);
 	uint8_t opcode = (uint8_t)extract(instruction, START_OPCODE, END_OPCODE);
-//	printf("\tOpcode: %x", opcode);
 	return opcode;
 }
 
@@ -181,11 +175,6 @@ OperandsI extract_i(uint32_t instruction) {
 	operands.immediate = (int16_t)extract(instruction, immediate_start,
 		 END_INSTRUCTION);
 	
-//	if ( extract(operands.immediate,0,0) ) {
-//
-//		operands.immediate &= 0x7FFF;
-//		operands.immediate = -operands.immediate;
-//	}
 
 	return operands;
 }
@@ -369,17 +358,7 @@ void jr_instruction(uint32_t instruction, State *machine_state) {
 	 * register operand.
 	 */
 	OperandsR operands = extract_r(instruction);
-//	printf("Register[%d]  Jumping to: %x\t",operands.r1,machine_state->reg[operands.r1]);
-	/* this is wrong, it should be jumping to 
-	 * somewhere in memory not the address of a register!
-	 *
-	 *	machine_state->pc = &machine_state->reg[operands.r1];
-	 * The desired behaviour is coded below!
-	 */
-	uint32_t address = machine_state->reg[operands.r1];
-//	printf("Address: %x\t", address);
-	machine_state->pc = address;
-//	printf("Value in PC: %x\n", *(machine_state->pc));
+	machine_state->pc = machine_state->reg[operands.r1];
 }
 
 void jal_instruction(uint32_t instruction, State *machine_state) {
@@ -387,15 +366,8 @@ void jal_instruction(uint32_t instruction, State *machine_state) {
 	 * Store the instruction that would normally be executed next (PC + 4)
 	 * in R31 and set PC to a given operand.
 	 */
-	printf("Start of program: %x", machine_state->mem);
-	printf("\tPC: %x", machine_state->pc);
-	printf("\tNext instruction: %x", machine_state->pc + 4);
-
 	uint8_t address = extract_address(instruction);
- 	uint32_t pc4 =(machine_state->pc + 4);
-	machine_state->reg[31] = pc4;
-	printf("\tpc4: %x, reg31: %x", pc4,machine_state->reg[31]);//machine_state->reg[31]);
-
+	machine_state->reg[31] = (machine_state->pc + 4);
 	machine_state->pc = &machine_state->mem[address];
 }
 
@@ -405,9 +377,8 @@ void out_instruction(uint32_t instruction, State *machine_state) {
 	OperandsR operands = extract_r(instruction);
 	uint32_t regVal = machine_state->reg[operands.r1];
 	uint32_t out = extract(regVal, END_INSTRUCTION - 7, END_INSTRUCTION);
-	/*intentional segfault*/
+	
 	printf("*%x*", out);
-//	sleep(2);
 
 	increment_pc(machine_state,1);	
 }
