@@ -63,6 +63,7 @@ int main(int argc, char **argv) {
 		else {
 			fprintf(stderr, "*** Invalid opcode '%d'. "
 				"Instruction ignored.\n", opcode);
+			increment_pc(current, 1);
 		}
 
 	} while (opcode != 0);
@@ -121,7 +122,7 @@ int is_valid_opcode(uint8_t opcode) {
 void check_mem_access(int location) {
 	if (location < 0 || location >= MEM_SIZE) {
 		fprintf(stderr, "*** Segmentation fault. Cannot access memory "
-			"location %d. Terminating.", location);
+			"location '%d'. Terminating.", location);
 		exit(EXIT_FAILURE);	
 	}
 }
@@ -174,7 +175,7 @@ OperandsR extract_r(uint32_t instruction) {
 	uint8_t r1_start = END_OPCODE + 1;
 	uint8_t r2_start = r1_start + REG_WIDTH;
 	uint8_t r3_start = r2_start + REG_WIDTH;
-
+	
 	operands.r1 = extract(instruction, r1_start, r2_start - 1);
 	operands.r2 = extract(instruction, r2_start, r3_start - 1);
 	operands.r3 = extract(instruction, r3_start, r3_start + REG_WIDTH - 1);
@@ -198,7 +199,6 @@ OperandsI extract_i(uint32_t instruction) {
 	operands.r2 = extract(instruction, r2_start, immediate_start - 1 );
 	operands.immediate = (int16_t)extract(instruction, immediate_start,
 		 END_INSTRUCTION);
-	
 
 	return operands;
 }
@@ -224,9 +224,6 @@ void halt_instruction(uint32_t instruction, State *machine_state) {
 	}
 
 	fprintf(stderr, "\n");
-
-	/* Program needs to terminate on halt. */
-	exit(EXIT_SUCCESS);
 }
 
 void add_instruction(uint32_t instruction, State *machine_state) {
@@ -285,7 +282,8 @@ void lw_instruction(uint32_t instruction, State *machine_state) {
 	 */
 	OperandsI operands = extract_i(instruction);
 	uint32_t r2 = machine_state->reg[operands.r2];	
-	
+
+	/* Check if the memory access will be valid. */	
 	int location = r2 + operands.immediate;
 	check_mem_access(location);
 
@@ -303,6 +301,7 @@ void sw_instruction(uint32_t instruction, State *machine_state) {
 	OperandsI operands = extract_i(instruction);
 	uint32_t r2 = machine_state->reg[operands.r2];
 
+	/* Check if the memory access will be valid. */
 	int location = r2 + operands.immediate;
 	check_mem_access(location);
 	

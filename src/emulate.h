@@ -34,6 +34,7 @@ uint32_t extract(uint32_t,uint8_t,uint8_t);
 uint8_t extract_opcode(uint32_t);
 uint32_t extract_address(uint32_t);
 
+/* Input validation functions. */
 int is_valid_opcode(uint8_t);
 void check_mem_access(int);
 
