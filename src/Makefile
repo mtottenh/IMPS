@@ -9,8 +9,9 @@ all: assemble emulate
 
 assemble: assemble.o
 	$(CC) $(CFLAGS) -o $@ $^
-emulate: emulate.o instructions.o
-	$(CC) $(CFLAGS)-o $@ $^
+
+emulate: emulate.o
+	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
 	rm -f *.o
