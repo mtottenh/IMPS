@@ -393,9 +393,14 @@ void out_instruction(uint32_t instruction, State *machine_state) {
 	uint32_t regVal = machine_state->reg[operands.r1];
 	uint32_t out = extract(regVal, END_INSTRUCTION - 7, END_INSTRUCTION);
 	
-	printf("*%x*", out);
+	/* Debug lines - remove both before submission. */
+	printf("** HEX OUTPUT (DEBUG)  ** : %x\n", out);
+	printf("** CHAR OUTPUT (RELEASE) ** :");
+	/* End debug lines */
 
-	increment_pc(machine_state,1);	
+	printf("%c", out);
+	
+	increment_pc(machine_state, 1);	
 }
 
 /*useful code
