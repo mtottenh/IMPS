@@ -1,6 +1,10 @@
 #ifndef _INSTRUCTIONS_H_
 #define _INSTRUCTIONS_H_
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+
 #include "utils.h"
 
 

@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "instructions.h"
 #include "utils.h"
 /* Increments the program counter by a given number of steps */
@@ -71,7 +70,14 @@ void lw_instruction(uint32_t instruction, State *machine_state) {
          */
         OperandsI operands = extract_i(instruction);
         uint32_t r2 = machine_state->reg[operands.r2];
-	uint32_t *result = &machine_state->mem[r2 + operands.immediate];
+
+	/* Check if memory access will be valid. If not, terminate. */
+	int location = r2 + operands.immediate;
+	if(check_mem_access(location)) {
+		exit(EXIT_FAILURE);
+	}
+
+	uint32_t *result = &machine_state->mem[location];
 	machine_state->reg[operands.r1] = *result;
         increment_pc(machine_state, 1);
 }
@@ -84,7 +90,14 @@ void sw_instruction(uint32_t instruction, State *machine_state) {
          */
         OperandsI operands = extract_i(instruction);
         uint32_t r2 = machine_state->reg[operands.r2];
-        uint32_t *pointer = &machine_state->mem[r2 + operands.immediate];
+
+	/* Check if memory access will be valid. If not, terminate. */
+	int location = r2 + operands.immediate;
+	if(check_mem_access(location)) {
+		exit(EXIT_FAILURE);
+	}
+
+        uint32_t *pointer = &machine_state->mem[location];
         *pointer  = machine_state->reg[operands.r1];
         increment_pc(machine_state, 1);
 }
@@ -174,6 +187,12 @@ void bge_instruction(uint32_t instruction, State *machine_state) {
 void jmp_instruction(uint32_t instruction, State *machine_state) {
         /* Jump to an address by setting the PC to a given operand. */
         uint32_t address = extract_address(instruction);
+
+	/* Check whether the address is valid. If not, terminate. */
+	if(check_address(address)) {
+		exit(EXIT_FAILURE);
+	}
+	
         machine_state->pc = &machine_state->mem[address];
 }
 
@@ -191,13 +210,18 @@ void jal_instruction(uint32_t instruction, State *machine_state) {
         /*
          * Store the instruction that would normally be executed next (PC + 4)
          * in R31 and set PC to a given operand.
-         */
-	
+         */	
         uint32_t address = extract_address(instruction);
+
+	/* Check whether the address is valid. If not, terminate. */
+	if(check_address(address)) {
+		exit(EXIT_FAILURE);
+	}
 
         machine_state->reg[31] = (uintptr_t)(machine_state->pc + 4);
         machine_state->pc = &machine_state->mem[address];
 }
+
 void out_instruction(uint32_t instruction, State *machine_state) {
        /* Prints the least significant eight bits of R1 to stdout. */  
        OperandsR operands = extract_r(instruction);
