@@ -1,4 +1,5 @@
 #include "utils.h"
+
 /* Checks whether a given opcode is valid. */
 int is_valid_opcode(uint8_t opcode) {
 	return opcode >= 0 && opcode < NUM_OPCODES;
@@ -24,28 +25,23 @@ int check_address(uint32_t address) {
 	return 0;
 }
 
-
-
-/* Extraction functions to split an instruction into its component parts. */
-static uint8_t const START_OPCODE = 0;
-static uint8_t const END_OPCODE = 5;
-static uint8_t const REG_WIDTH = 5;
-//static uint8_t const END_INSTRUCTION = 31;
-
 /*
  * General extraction function - extracts the bits located at a given start
  * and end location inclusive.
  */
 uint32_t extract(uint32_t instruction, uint8_t start, uint8_t end) {
+	/* Set initial empty mask. */
 	uint32_t mask = 0;
+
+	/* Adjust start and end points for little endian conversion. */
 	start = 31 - start; 
 	end = 31 - end;
 
-	for (int i = end ;i <= start; i++) {
-		mask = mask + (1 << i);
+	for (int i = end; i <= start; i++) {
+		mask += (1 << i);
 	}
  	
-	return (mask & instruction) >> (end);
+	return (mask & instruction) >> end;
 }
 
 /* Extacts the opcode from a given instruction via a call to extract. */
@@ -92,7 +88,7 @@ OperandsI extract_i(uint32_t instruction) {
 	operands.r1 = extract(instruction, r1_start, r2_start - 1);
 	operands.r2 = extract(instruction, r2_start, immediate_start - 1 );
 	
-	/*Casting to int16_t performs sign extension if necessary*/
+	/* Casting to int16_t performs sign extension if necessary. */
 	operands.immediate = (int16_t)extract(instruction, immediate_start,
 		 END_INSTRUCTION);
 

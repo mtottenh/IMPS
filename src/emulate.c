@@ -1,5 +1,5 @@
-
 #include "emulate.h"
+
 int main(int argc, char **argv) {
 
 	/*
@@ -8,8 +8,7 @@ int main(int argc, char **argv) {
 	 */
 
 	State* current = malloc(sizeof(State));
-	if (current == NULL)
-	{
+	if (current == NULL) {
 		perror("*** Couldn't allocate memory to machine state. Terminating");
 		return EXIT_FAILURE;
 	}	
@@ -25,8 +24,7 @@ int main(int argc, char **argv) {
 	char *file_path = argv[1];
 
 	/* Open binary file. */
-	if((binary_file = fopen(file_path, "rb")) == NULL)
-	{
+	if((binary_file = fopen(file_path, "rb")) == NULL) {
 		perror("*** Couldn't open file specified at runtime. Terminating");
 		return EXIT_FAILURE;
 	}
@@ -44,24 +42,19 @@ int main(int argc, char **argv) {
 	/* Begin decode execute loop */
 	uint8_t opcode;
 	do {
-		
 		uint32_t *instruction = (uint32_t *)&current->mem[current->pc];
 		opcode = extract_opcode(*instruction);
 
 		if (is_valid_opcode(opcode)) {
-			//printf("PC = %u, opcode = %u, instruction = %x\n", 
-				//current->pc,opcode, *instruction);
 			func_pointers[opcode](*instruction, current);
 		}
 
 		else {
-			//fprintf(stderr, "*** Invalid opcode '%d'. "
-				//"Instruction ignored.\n", opcode);
 			increment_pc(current, 1);
 		}
-
 	} while (opcode != 0);
 
+	/* Deallocate the memory assigned to the machine state. */
 	free(current);
 
 	return EXIT_SUCCESS;
@@ -69,17 +62,13 @@ int main(int argc, char **argv) {
 
 /* Initialises a machine state */
 int init(State *machine_state) {
-	/*
-	 * Sets PC to first memory location
-	 * PC is a pointer to 8 bits of memory;
-	 * has to be byte addressable
-	 */
-	 machine_state->pc = 0;
+	/* Sets PC to first memory location.*/
+	machine_state->pc = 0;
 
-	 /* Initialise memory to 0 */
-	 memset(machine_state->mem, 0, sizeof(uint8_t)*MEM_SIZE);
-	 memset(machine_state->reg, 0, sizeof(uint32_t)*NUM_REGS);
-	 return 0;
+	/* Initialise memory to 0. */
+	memset(machine_state->mem, 0, sizeof(uint8_t) * MEM_SIZE);
+	memset(machine_state->reg, 0, sizeof(uint32_t) * NUM_REGS);
+	return 0;
 }
 
 /*

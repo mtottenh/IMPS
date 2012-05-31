@@ -4,9 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 #include "utils.h"
-
 
 /* Structure for the emulators state. */
 typedef struct State {
@@ -14,13 +12,12 @@ typedef struct State {
         uint8_t mem[MEM_SIZE];
         uint32_t reg[NUM_REGS];
 } State;
+
 /* Type of function pointer to opcode functions. */
 typedef void (*FunctionPointer)(uint32_t, State*);
 
-
-/* State initialisation and extraction functions. */
+/* Increment PC function. */
 void increment_pc(State*, int16_t);
-void setup_pointers(FunctionPointer array[]);
 
 /* Functions corresponding to the IMPS opcode functions. */
 void halt_instruction(uint32_t, State*);

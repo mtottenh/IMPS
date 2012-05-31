@@ -5,9 +5,8 @@
 #include "utils.h"
 #include <string.h>
 
-/* State initialisation and extraction functions. */
+/* State initialisation and pointer setup functions. */
 int init(State*);
-
-void setup_pointers(FunctionPointer array[]);
+void setup_pointers(FunctionPointer[]);
 
 #endif

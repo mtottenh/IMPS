@@ -1,9 +1,11 @@
 #include "instructions.h"
 #include "utils.h"
-/* Increments the program counter by a given number of steps */
+
+/* Increments the program counter by a given number of steps. */
 void increment_pc(State *machine_state, int16_t i) {
 	machine_state->pc = machine_state->pc + (4 * i);
 }
+
 /* Functions corresponding to the IMPS opcode functions. */
 void halt_instruction(uint32_t instruction, State *machine_state) {
         /* Print the values of PC and registers, then terminate the program. */
@@ -74,10 +76,13 @@ void lw_instruction(uint32_t instruction, State *machine_state) {
 	/* Check if memory access will be valid. If not, terminate. */
 	int location = r2 + operands.immediate;
 	if(check_mem_access(location)) {
-		//f//printf(stderr, "*** Terminating...\n");
 		exit(EXIT_FAILURE);
 	}
-	/*Look at this later!!!!!*/
+
+	/*
+	 * Look at memory location as a pointer to uint32_t in order to access
+	 * adjacent memory locations.
+	 */
 	uint32_t *result = (uint32_t *)&machine_state->mem[location];
 	machine_state->reg[operands.r1] = *result;
         increment_pc(machine_state, 1);
@@ -95,10 +100,13 @@ void sw_instruction(uint32_t instruction, State *machine_state) {
 	/* Check if memory access will be valid. If not, terminate. */
 	int location = r2 + operands.immediate;
 	if(check_mem_access(location)) {
-		//f//printf(stderr, "*** Terminating...\n");
 		exit(EXIT_FAILURE);
 	}
 
+	/*
+	 * Look at memory location as a pointer to uint32_t in order to access
+	 * adjacent memory locations.
+	 */
         uint32_t *pointer = (uint32_t *)&machine_state->mem[location];
         *pointer  = machine_state->reg[operands.r1];
         increment_pc(machine_state, 1);
@@ -111,10 +119,12 @@ void beq_instruction(uint32_t instruction, State *machine_state) {
          * Otherwise, increment the program counter normally.
          */
         OperandsI operands = extract_i(instruction);
-        if (machine_state->reg[operands.r1] == machine_state->reg[operands.r2])
+        if (machine_state->reg[operands.r1] == machine_state->reg[operands.r2]) {
                 increment_pc(machine_state, operands.immediate);
-        else
+	}
+        else {
                 increment_pc(machine_state,1);
+	}
 }
 
 void bne_instruction(uint32_t instruction, State *machine_state) {
@@ -122,12 +132,14 @@ void bne_instruction(uint32_t instruction, State *machine_state) {
          * If the values of two register operands are not equal, increment the
          * program counter by 4 * C, where C is an immediate value.
          * Otherwise, increment the program counter normally.
-         */
-        OperandsI operands = extract_i(instruction);
-        if (machine_state->reg[operands.r1] != machine_state->reg[operands.r2])
+  	 */
+	OperandsI operands = extract_i(instruction);
+	if (machine_state->reg[operands.r1] != machine_state->reg[operands.r2]) {
                 increment_pc(machine_state, operands.immediate);
-        else
+	}
+        else {
                 increment_pc(machine_state,1);
+	}
 }
 
 void blt_instruction(uint32_t instruction, State *machine_state) {
@@ -137,11 +149,13 @@ void blt_instruction(uint32_t instruction, State *machine_state) {
          * is an immediate value.
          * Otherwise, increment the program counter normally.
          */
-        OperandsI operands = extract_i(instruction);
-        if (machine_state->reg[operands.r1] < machine_state->reg[operands.r2])
-                 increment_pc(machine_state, operands.immediate);
-        else
+	OperandsI operands = extract_i(instruction);
+	if (machine_state->reg[operands.r1] < machine_state->reg[operands.r2]) {
+		increment_pc(machine_state, operands.immediate);
+	}
+        else {
                 increment_pc(machine_state,1);
+	}
 }
 
 void bgt_instruction(uint32_t instruction, State *machine_state) {
@@ -152,10 +166,12 @@ void bgt_instruction(uint32_t instruction, State *machine_state) {
          * Otherwise, increment the program counter normally.
          */
         OperandsI operands = extract_i(instruction);
-        if (machine_state->reg[operands.r1] > machine_state->reg[operands.r2])
-                 increment_pc(machine_state, operands.immediate);
-        else
+        if (machine_state->reg[operands.r1] > machine_state->reg[operands.r2]) {
+                increment_pc(machine_state, operands.immediate);
+	}
+        else {
                 increment_pc(machine_state,1);
+	}
 }
 
 void ble_instruction(uint32_t instruction, State *machine_state) {
@@ -166,10 +182,12 @@ void ble_instruction(uint32_t instruction, State *machine_state) {
          * Otherwise, increment the program counter normally.
          */
         OperandsI operands = extract_i(instruction);
-        if (machine_state->reg[operands.r1] <= machine_state->reg[operands.r2])
-                 increment_pc(machine_state, operands.immediate);
-        else
+        if (machine_state->reg[operands.r1] <= machine_state->reg[operands.r2]) {
+                increment_pc(machine_state, operands.immediate);
+	}
+        else {
                 increment_pc(machine_state,1);
+	}
 }
 
 void bge_instruction(uint32_t instruction, State *machine_state) {
@@ -180,10 +198,12 @@ void bge_instruction(uint32_t instruction, State *machine_state) {
          * Otherwise, increment the program counter normally.
          */
         OperandsI operands = extract_i(instruction);
-        if (machine_state->reg[operands.r1] >= machine_state->reg[operands.r2])
-                 increment_pc(machine_state, operands.immediate);
-        else
+        if (machine_state->reg[operands.r1] >= machine_state->reg[operands.r2]) {
+                increment_pc(machine_state, operands.immediate);
+	}
+        else {
                 increment_pc(machine_state,1);
+	}
 }
 
 void jmp_instruction(uint32_t instruction, State *machine_state) {
@@ -192,7 +212,6 @@ void jmp_instruction(uint32_t instruction, State *machine_state) {
 
 	/* Check whether the address is valid. If not, terminate. */
 	if(check_address(address)) {
-		//f//printf(stderr, "*** Terminating...\n");
 		exit(EXIT_FAILURE);
 	}
 	
@@ -205,7 +224,6 @@ void jr_instruction(uint32_t instruction, State *machine_state) {
          * register operand.
          */
         OperandsR operands = extract_r(instruction);
-
         machine_state->pc = (uint16_t)machine_state->reg[operands.r1];
 }
 
@@ -218,7 +236,6 @@ void jal_instruction(uint32_t instruction, State *machine_state) {
 
 	/* Check whether the address is valid. If not, terminate. */
 	if(check_address(address)) {
-		//f//printf(stderr, "*** Terminating...\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -227,17 +244,12 @@ void jal_instruction(uint32_t instruction, State *machine_state) {
 }
 
 void out_instruction(uint32_t instruction, State *machine_state) {
-       /* Prints the least significant eight bits of R1 to stdout. */  
-       OperandsR operands = extract_r(instruction);
-       uint32_t regVal = machine_state->reg[operands.r1];
-       uint32_t out = extract(regVal, END_INSTRUCTION - 7, END_INSTRUCTION);
+	/* Prints the least significant eight bits of R1 to stdout. */  
+	OperandsR operands = extract_r(instruction);
+	uint32_t regVal = machine_state->reg[operands.r1];
+	uint32_t out = extract(regVal, END_INSTRUCTION - 7, END_INSTRUCTION);
        
-       /* Debug lines - remove both before submission. */
-       //printf("** HEX OUTPUT (DEBUG)  ** : %x\n", out);
-       //printf("** BINARY OUTPUT (RELEASE) ** :");
-       /* End debug lines */
-
 	printf("%c", out);
 
-       increment_pc(machine_state, 1);
+	increment_pc(machine_state, 1);
 } 
