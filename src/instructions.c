@@ -77,7 +77,7 @@ void lw_instruction(uint32_t instruction, State *machine_state) {
 		exit(EXIT_FAILURE);
 	}
 
-	uint32_t *result = &machine_state->mem[location];
+	uint32_t *result = (uint32_t *)&machine_state->mem[location];
 	machine_state->reg[operands.r1] = *result;
         increment_pc(machine_state, 1);
 }
@@ -97,7 +97,7 @@ void sw_instruction(uint32_t instruction, State *machine_state) {
 		exit(EXIT_FAILURE);
 	}
 
-        uint32_t *pointer = &machine_state->mem[location];
+        uint32_t *pointer = (uint32_t *)&machine_state->mem[location];
         *pointer  = machine_state->reg[operands.r1];
         increment_pc(machine_state, 1);
 }
