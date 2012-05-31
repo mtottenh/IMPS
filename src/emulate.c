@@ -296,7 +296,7 @@ void lw_instruction(uint32_t instruction, State *machine_state) {
 	int location = r2 + operands.immediate;
 	check_mem_access(location);
 
-	uint32_t *result = &machine_state->mem[location];
+	uint32_t *result = (uint32_t *)&machine_state->mem[location];
 	machine_state->reg[operands.r1] = *result;
 	increment_pc(machine_state, 1);
 }
@@ -314,7 +314,7 @@ void sw_instruction(uint32_t instruction, State *machine_state) {
 	int location = r2 + operands.immediate;
 	check_mem_access(location);
 	
- 	uint32_t *pointer = &machine_state->mem[location];
+ 	uint32_t *pointer = (uint32_t *)&machine_state->mem[location];
 	*pointer  = machine_state->reg[operands.r1];
 	increment_pc(machine_state, 1);
 }
@@ -417,7 +417,7 @@ void jr_instruction(uint32_t instruction, State *machine_state) {
 	 * register operand.
 	 */
 	OperandsR operands = extract_r(instruction);
-	machine_state->pc = machine_state->reg[operands.r1];
+	machine_state->pc = (uint8_t *)machine_state->reg[operands.r1];
 }
 
 void jal_instruction(uint32_t instruction, State *machine_state) {
@@ -430,7 +430,7 @@ void jal_instruction(uint32_t instruction, State *machine_state) {
 	/* Check whether the address is valid. If not, terminate. */
 	check_address(address);
 
-	machine_state->reg[31] = (machine_state->pc + 4);
+	machine_state->reg[31] = (uintptr_t)(machine_state->pc + 4);
 	machine_state->pc = &machine_state->mem[address];
 }
 
