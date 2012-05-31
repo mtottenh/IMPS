@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include "instructions.h"
 #include "utils.h"
-
+/* Increments the program counter by a given number of steps */
+void increment_pc(State *machine_state, int16_t i) {
+	machine_state->pc = machine_state->pc + (4 * i);
+}
 /* Functions corresponding to the IMPS opcode functions. */
 void halt_instruction(uint32_t instruction, State *machine_state) {
         /* Print the values of PC and registers, then terminate the program. */
@@ -180,15 +183,8 @@ void jr_instruction(uint32_t instruction, State *machine_state) {
          * register operand.
          */
         OperandsR operands = extract_r(instruction);
-        printf("Jumping to: %x",machine_state->reg[operands.r1]);
-        /* this is wrong, it should be jumping to
-         * somewhere in memory not the address of a register!
-         *
-         *      machine_state->pc = &machine_state->reg[operands.r1];
-         * The desired behaviour is coded below!
-         */
-        uint8_t address = machine_state->reg[operands.r1];
-        machine_state->pc = &machine_state->mem[address];
+
+        machine_state->pc = (uint8_t *)machine_state->reg[operands.r1];
 }
 
 void jal_instruction(uint32_t instruction, State *machine_state) {
@@ -196,18 +192,26 @@ void jal_instruction(uint32_t instruction, State *machine_state) {
          * Store the instruction that would normally be executed next (PC + 4)
          * in R31 and set PC to a given operand.
          */
-        uint8_t address = extract_address(instruction);
-        machine_state->reg[31] = *(machine_state->pc + 4);
+	
+        uint32_t address = extract_address(instruction);
+
+        machine_state->reg[31] = (uintptr_t)(machine_state->pc + 4);
         machine_state->pc = &machine_state->mem[address];
 }
-
-
 void out_instruction(uint32_t instruction, State *machine_state) {
-        /* Prints the least significant eight bits of R1 to stdout. */
-        OperandsR operands = extract_r(instruction);
-        uint32_t regVal = machine_state->reg[operands.r1];
-        uint32_t out = extract(regVal, END_INSTRUCTION - 7, END_INSTRUCTION);
-        printf("**%x**", out);
-        increment_pc(machine_state,1);
-}
+       /* Prints the least significant eight bits of R1 to stdout. */  
+       OperandsR operands = extract_r(instruction);
+       uint32_t regVal = machine_state->reg[operands.r1];
+       uint32_t out = extract(regVal, END_INSTRUCTION - 7, END_INSTRUCTION);
+       
+       /* Debug lines - remove both before submission. */
+       printf("** HEX OUTPUT (DEBUG)  ** : %x\n", out);
+       printf("** BINARY OUTPUT (RELEASE) ** :");
+       /* End debug lines */
 
+       /* ------ THIS IS UNRELIABLE AND MAY NOT ALWAYS WORK ---- */
+       /* TODO - Use freopen() for binary mode. Sean will do this. */
+       printf("%c", out);
+       
+       increment_pc(machine_state, 1);
+} 

@@ -10,8 +10,11 @@ all: assemble emulate
 assemble: assemble.o
 	$(CC) $(CFLAGS) -o $@ $^
 
-emulate: emulate.o
+emulate: emulate.o instructions.o utils.o
 	$(CC) $(CFLAGS) -o $@ $^
+
+
+
 
 clean:
 	rm -f *.o

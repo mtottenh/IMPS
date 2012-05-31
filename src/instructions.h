@@ -1,9 +1,8 @@
 #ifndef _INSTRUCTIONS_H_
 #define _INSTRUCTIONS_H_
 #include <stdint.h>
+#include "utils.h"
 
-#define MEM_SIZE 65536
-#define NUM_REGS 32
 
 /* Structure for the emulators state. */
 typedef struct State {
@@ -11,19 +10,14 @@ typedef struct State {
         uint8_t mem[MEM_SIZE];
         uint32_t reg[NUM_REGS];
 } State;
+/* Type of function pointer to opcode functions. */
+typedef void (*FunctionPointer)(uint32_t, State*);
 
-/* Structure that represent the operands of R and I type instructions. */
-typedef struct OperandsR {
-        uint8_t r1;
-        uint8_t r2;
-        uint8_t r3;
-} OperandsR;
 
-typedef struct OperandsI {
-        uint8_t r1;
-        uint8_t r2;
-        int16_t immediate;
-} OperandsI;
+/* State initialisation and extraction functions. */
+int init(State*);
+void increment_pc(State*, int16_t);
+void setup_pointers(FunctionPointer array[]);
 
 /* Functions corresponding to the IMPS opcode functions. */
 void halt_instruction(uint32_t, State*);
