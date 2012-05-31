@@ -92,17 +92,9 @@ OperandsI extract_i(uint32_t instruction) {
 	operands.r1 = extract(instruction, r1_start, r2_start - 1);
 	operands.r2 = extract(instruction, r2_start, immediate_start - 1 );
 	
+	/*Casting to int16_t performs sign extension if necessary*/
 	operands.immediate = (int16_t)extract(instruction, immediate_start,
 		 END_INSTRUCTION);
-	
-	/* If the top bit of the immediate value is set, mask top bit
-	 * and negate value
-	 */
-	
-	/*if (extract(operands.immediate, 0, 0))
-	{
-		operands.immediate = -(extract(operands.immediate, 1, 15));
-	}*/
 
 	return operands;
 }
