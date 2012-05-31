@@ -2,7 +2,7 @@
 
 /* Checks whether a given opcode is valid. */
 int is_valid_opcode(uint8_t opcode) {
-	return opcode >= 0 && opcode < NUM_OPCODES;
+	return opcode < NUM_OPCODES;
 }
 
 /* Checks whether access to a memory location is valid. If not, terminate. */

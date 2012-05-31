@@ -248,8 +248,14 @@ void out_instruction(uint32_t instruction, State *machine_state) {
 	OperandsR operands = extract_r(instruction);
 	uint32_t regVal = machine_state->reg[operands.r1];
 	uint32_t out = extract(regVal, END_INSTRUCTION - 7, END_INSTRUCTION);
-       
+
+	/*
+	 * Opening stdout in binary mode, printing to console, then
+	 * reopening in normal write mode with the append flag set.
+	 */
+	freopen(NULL, "wb", stdout);
 	printf("%c", out);
+	freopen(NULL, "wa", stdout);
 
 	increment_pc(machine_state, 1);
 } 

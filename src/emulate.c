@@ -37,7 +37,6 @@ int main(int argc, char **argv) {
 	 * Reopen stdout in binary mode - avoids repeated calls to freopen
 	 * on out_instruction.
 	 */
-	freopen(NULL, "wb", stdout);
 
 	/* Begin decode execute loop */
 	uint8_t opcode;
