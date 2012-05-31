@@ -33,11 +33,6 @@ int main(int argc, char **argv) {
 	fread(current->mem, sizeof(uint8_t), MEM_SIZE, binary_file);
 	fclose(binary_file);
 
-	/*
-	 * Reopen stdout in binary mode - avoids repeated calls to freopen
-	 * on out_instruction.
-	 */
-
 	/* Begin decode execute loop */
 	uint8_t opcode;
 	do {

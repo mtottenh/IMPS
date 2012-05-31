@@ -9,11 +9,24 @@ void increment_pc(State *machine_state, int16_t i) {
 /* Functions corresponding to the IMPS opcode functions. */
 void halt_instruction(uint32_t instruction, State *machine_state) {
         /* Print the values of PC and registers, then terminate the program. */
-        fprintf(stderr, "PC: %x\n", machine_state->pc);
+        fprintf(stderr, " PC: 0x%x\t", machine_state->pc);
+
+	uint8_t num_cols = 1;
 
         for(int i = 0; i < NUM_REGS; i++) {
-                fprintf(stderr, "R%d: %x\n", i, machine_state->reg[i]);
+                fprintf(stderr, "R%02d: 0x%x", i, machine_state->reg[i]);
+		num_cols++;
+		
+		if (num_cols >= 4) {
+			fprintf(stderr, "\n");
+			num_cols = 0;
+		}
+		else {
+			fprintf(stderr, "\t");
+		} 
         }
+
+	fprintf(stderr, "\n");
 }
 
 void add_instruction(uint32_t instruction, State *machine_state) {
@@ -76,6 +89,7 @@ void lw_instruction(uint32_t instruction, State *machine_state) {
 	/* Check if memory access will be valid. If not, terminate. */
 	int location = r2 + operands.immediate;
 	if(check_mem_access(location)) {
+		fprintf(stdout, "*** Terminating...");
 		exit(EXIT_FAILURE);
 	}
 
@@ -100,6 +114,7 @@ void sw_instruction(uint32_t instruction, State *machine_state) {
 	/* Check if memory access will be valid. If not, terminate. */
 	int location = r2 + operands.immediate;
 	if(check_mem_access(location)) {
+		fprintf(stdout, "*** Terminating...");
 		exit(EXIT_FAILURE);
 	}
 
@@ -212,6 +227,7 @@ void jmp_instruction(uint32_t instruction, State *machine_state) {
 
 	/* Check whether the address is valid. If not, terminate. */
 	if(check_address(address)) {
+		fprintf(stdout, "*** Terminating...");
 		exit(EXIT_FAILURE);
 	}
 	
@@ -236,6 +252,7 @@ void jal_instruction(uint32_t instruction, State *machine_state) {
 
 	/* Check whether the address is valid. If not, terminate. */
 	if(check_address(address)) {
+		fprintf(stdout, "*** Terminating...");
 		exit(EXIT_FAILURE);
 	}
 
