@@ -6,7 +6,7 @@ int is_valid_opcode(uint8_t opcode) {
 
 /* Checks whether access to a memory location is valid. If not, terminate. */
 int check_mem_access(int location) {
-	if (location < 0 || location >= MEM_SIZE) {
+	if (location < 0 || location > MEM_SIZE - 4) {
 		fprintf(stderr, "*** Cannot access memory "
 			"location '%d'.\n", location);
 		return 1;
