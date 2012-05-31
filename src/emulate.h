@@ -3,7 +3,7 @@
 
 #include "instructions.h"
 #include "utils.h"
-
+#include <string.h>
 
 /* State initialisation and extraction functions. */
 int init(State*);

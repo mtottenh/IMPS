@@ -19,7 +19,6 @@ typedef void (*FunctionPointer)(uint32_t, State*);
 
 
 /* State initialisation and extraction functions. */
-int init(State*);
 void increment_pc(State*, int16_t);
 void setup_pointers(FunctionPointer array[]);
 
