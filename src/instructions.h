@@ -10,7 +10,7 @@
 
 /* Structure for the emulators state. */
 typedef struct State {
-        uint8_t *pc;
+        uint16_t pc;
         uint8_t mem[MEM_SIZE];
         uint32_t reg[NUM_REGS];
 } State;

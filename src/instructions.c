@@ -7,7 +7,7 @@ void increment_pc(State *machine_state, int16_t i) {
 /* Functions corresponding to the IMPS opcode functions. */
 void halt_instruction(uint32_t instruction, State *machine_state) {
         /* Print the values of PC and registers, then terminate the program. */
-        fprintf(stderr, "PC: %x\n", *(machine_state->pc));
+        fprintf(stderr, "PC: %x\n", machine_state->pc);
 
         for(int i = 0; i < NUM_REGS; i++) {
                 fprintf(stderr, "R%d: %x\n", i, machine_state->reg[i]);
@@ -76,7 +76,7 @@ void lw_instruction(uint32_t instruction, State *machine_state) {
 	if(check_mem_access(location)) {
 		exit(EXIT_FAILURE);
 	}
-
+	/*Look at this later!!!!!*/
 	uint32_t *result = (uint32_t *)&machine_state->mem[location];
 	machine_state->reg[operands.r1] = *result;
         increment_pc(machine_state, 1);
@@ -193,7 +193,7 @@ void jmp_instruction(uint32_t instruction, State *machine_state) {
 		exit(EXIT_FAILURE);
 	}
 	
-        machine_state->pc = &machine_state->mem[address];
+        machine_state->pc = address;
 }
 
 void jr_instruction(uint32_t instruction, State *machine_state) {
@@ -203,7 +203,7 @@ void jr_instruction(uint32_t instruction, State *machine_state) {
          */
         OperandsR operands = extract_r(instruction);
 
-        machine_state->pc = (uint8_t *)machine_state->reg[operands.r1];
+        machine_state->pc = (uint16_t)machine_state->reg[operands.r1];
 }
 
 void jal_instruction(uint32_t instruction, State *machine_state) {
@@ -218,8 +218,8 @@ void jal_instruction(uint32_t instruction, State *machine_state) {
 		exit(EXIT_FAILURE);
 	}
 
-        machine_state->reg[31] = (uintptr_t)(machine_state->pc + 4);
-        machine_state->pc = &machine_state->mem[address];
+        machine_state->reg[31] = (machine_state->pc + 4);
+        machine_state->pc = address;
 }
 
 void out_instruction(uint32_t instruction, State *machine_state) {

@@ -32,20 +32,21 @@ int main(int argc, char **argv) {
 	}
 
 	/* Read binary file into the current state's memory */
-	fread(current->pc, sizeof(uint8_t), MEM_SIZE, binary_file);
+	fread(current->mem, sizeof(uint8_t), MEM_SIZE, binary_file);
 	fclose(binary_file);
 
 
 	/* Begin decode execute loop */
 	uint8_t opcode;
 	do {
-		uint32_t instruction = *((uint32_t*) current->pc);
-		opcode = extract_opcode(instruction);
+		
+		uint32_t *instruction = (uint32_t *)&current->mem[current->pc];
+		opcode = extract_opcode(*instruction);
 
 		if (is_valid_opcode(opcode)) {
 			printf("PC = %u, opcode = %u, instruction = %x\n", 
-				*(current->pc),opcode, instruction);
-			func_pointers[opcode](instruction, current);
+				current->pc,opcode, *instruction);
+			func_pointers[opcode](*instruction, current);
 		}
 
 		else {
@@ -68,7 +69,7 @@ int init(State *machine_state) {
 	 * PC is a pointer to 8 bits of memory;
 	 * has to be byte addressable
 	 */
-	 machine_state->pc = machine_state->mem;
+	 machine_state->pc = 0;
 
 	 /* Initialise memory to 0 */
 	 memset(machine_state->mem, 0, sizeof(uint8_t)*MEM_SIZE);
