@@ -74,7 +74,7 @@ void lw_instruction(uint32_t instruction, State *machine_state) {
 	/* Check if memory access will be valid. If not, terminate. */
 	int location = r2 + operands.immediate;
 	if(check_mem_access(location)) {
-		fprintf(stderr, "*** Terminating...\n");
+		//f//printf(stderr, "*** Terminating...\n");
 		exit(EXIT_FAILURE);
 	}
 	/*Look at this later!!!!!*/
@@ -95,7 +95,7 @@ void sw_instruction(uint32_t instruction, State *machine_state) {
 	/* Check if memory access will be valid. If not, terminate. */
 	int location = r2 + operands.immediate;
 	if(check_mem_access(location)) {
-		fprintf(stderr, "*** Terminating...\n");
+		//f//printf(stderr, "*** Terminating...\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -192,7 +192,7 @@ void jmp_instruction(uint32_t instruction, State *machine_state) {
 
 	/* Check whether the address is valid. If not, terminate. */
 	if(check_address(address)) {
-		fprintf(stderr, "*** Terminating...\n");
+		//f//printf(stderr, "*** Terminating...\n");
 		exit(EXIT_FAILURE);
 	}
 	
@@ -218,7 +218,7 @@ void jal_instruction(uint32_t instruction, State *machine_state) {
 
 	/* Check whether the address is valid. If not, terminate. */
 	if(check_address(address)) {
-		fprintf(stderr, "*** Terminating...\n");
+		//f//printf(stderr, "*** Terminating...\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -233,13 +233,11 @@ void out_instruction(uint32_t instruction, State *machine_state) {
        uint32_t out = extract(regVal, END_INSTRUCTION - 7, END_INSTRUCTION);
        
        /* Debug lines - remove both before submission. */
-       printf("** HEX OUTPUT (DEBUG)  ** : %x\n", out);
-       printf("** BINARY OUTPUT (RELEASE) ** :");
+       //printf("** HEX OUTPUT (DEBUG)  ** : %x\n", out);
+       //printf("** BINARY OUTPUT (RELEASE) ** :");
        /* End debug lines */
 
-       /* ------ THIS IS UNRELIABLE AND MAY NOT ALWAYS WORK ---- */
-       /* TODO - Use freopen() for binary mode. Sean will do this. */
-       printf("%c", out);
-       
+	printf("%c", out);
+
        increment_pc(machine_state, 1);
 } 

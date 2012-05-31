@@ -35,6 +35,11 @@ int main(int argc, char **argv) {
 	fread(current->mem, sizeof(uint8_t), MEM_SIZE, binary_file);
 	fclose(binary_file);
 
+	/*
+	 * Reopen stdout in binary mode - avoids repeated calls to freopen
+	 * on out_instruction.
+	 */
+	freopen(NULL, "wb", stdout);
 
 	/* Begin decode execute loop */
 	uint8_t opcode;
@@ -44,14 +49,14 @@ int main(int argc, char **argv) {
 		opcode = extract_opcode(*instruction);
 
 		if (is_valid_opcode(opcode)) {
-			printf("PC = %u, opcode = %u, instruction = %x\n", 
-				current->pc,opcode, *instruction);
+			//printf("PC = %u, opcode = %u, instruction = %x\n", 
+				//current->pc,opcode, *instruction);
 			func_pointers[opcode](*instruction, current);
 		}
 
 		else {
-			fprintf(stderr, "*** Invalid opcode '%d'. "
-				"Instruction ignored.\n", opcode);
+			//fprintf(stderr, "*** Invalid opcode '%d'. "
+				//"Instruction ignored.\n", opcode);
 			increment_pc(current, 1);
 		}
 
