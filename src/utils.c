@@ -99,10 +99,10 @@ OperandsI extract_i(uint32_t instruction) {
 	 * and negate value
 	 */
 	
-	if (extract(operands.immediate, 0, 0))
+	/*if (extract(operands.immediate, 0, 0))
 	{
 		operands.immediate = -(extract(operands.immediate, 1, 15));
-	}
+	}*/
 
 	return operands;
 }
