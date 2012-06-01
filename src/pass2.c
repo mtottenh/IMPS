@@ -26,7 +26,7 @@ void pass2(FILE* output, Symbol_Table* table); {
 		 * Get the assembled line and add it to the line at the 
 		 * current index of the buffer.
 		 */
-		assembled_line = opcode | func_pointers[opcode](line);
+		assembled_line = (opcode << 25) | func_pointers[opcode](line);
 		buffer[index] = assembled_line;
 		index++;
 	}
@@ -56,7 +56,7 @@ void setup_pointers(FunctionPointer array[]) {
 	array[17] = &assemble_jtype; /* jal */
 	array[18] = &assemble_rtype; /* out */
 	array[19] = &assemble_fill; /* .fill directive */
-	array[20] = &assemble_skip /* .skip directive */
+	array[20] = &assemble_skip; /* .skip directive */
 }
 
 int16_t eval_immediate(char* immediate) {
@@ -97,4 +97,5 @@ uint32_t assemble_rtype(Tokeniser_Line* line) {
 }
 
 uint32_t assemble_itype(Tokeniser_Line* line) {
-	
+
+}	
