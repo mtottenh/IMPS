@@ -1,16 +1,20 @@
-typedef struct tokeniser {
-	FILE *file;
-	tokeniser_line line;
-};
-
-typedef struct tokenised_line {
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+typedef struct {
 	char* label;
 	char* opcode;
 	char* operand1;
 	char* operand2;
 	char* operand3;
-};
+	int num_operands;
+} Tokenised_Line;
 
-void tokeniser_init(FILE*, tokeniser*);
-int get_tokenised_line(tokeniser*);
-void free_tokeniser(tokeniser*);
+typedef struct {
+	FILE *file;
+	Tokenised_Line line;
+} Tokeniser;
+
+void tokeniser_init(FILE*, Tokeniser*);
+int get_tokenised_line(Tokeniser*);
+void free_tokeniser(Tokeniser*);
