@@ -6,16 +6,16 @@
  */
 
 /* Types for symbol table*/
-typedef key char*;
-typedef value uint16_t;
+typedef Key char*;
+typedef Value uint16_t;
 
 typedef struct Symbol_Table {
 	Symbol_Table_Entry *head;
 }
 /* Linekd list implementation of symbol table */
 typedef struct Symbol_Table_Entry {
-	key k;
-	value v; 
+	Key key;
+	Value value; 
 	Symbol_Table *next;
 };
 
@@ -25,7 +25,10 @@ Symbol_Table* Symbol_Table_new(void);
 /* Deletes a symbol table */
 void Symbol_Table_free(Symbol_Table*);
 
-/* Returns the size of the Symbol_Table pointed to by Symbol_Table* */
+/* 
+ * Returns the number of (key,value) pairs 
+ * in the Symbol_Table pointed to by Symbol_Table* 
+ */
 size_t Symbol_Table_getLength(Symbol_Table*);
 
 /* Adds the (key,value) pair to the symbol table poitned to by Symbol_Table* */
