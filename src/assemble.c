@@ -3,7 +3,7 @@
 
 struct symbol_table {
     char *symbol;
-    int  address;
+    uint16_t  address;
     struct symbol_table *next;
 };
 
