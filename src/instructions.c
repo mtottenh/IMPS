@@ -272,7 +272,7 @@ void out_instruction(uint32_t instruction, State *machine_state) {
 	 */
 	freopen(NULL, "wb", stdout);
 	printf("%c", out);
-	freopen(NULL, "wa", stdout);
+	//freopen(NULL, "wa", stdout);
 
 	increment_pc(machine_state, 1);
 } 
