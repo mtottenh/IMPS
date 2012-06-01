@@ -1,11 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-
-struct symbol_table {
-    char *symbol;
-    uint16_t  address;
-    struct symbol_table *next;
-};
+#include "symbol_table.h"
 
 int main(int argc, char **argv) {
     if (argc != 3) {
