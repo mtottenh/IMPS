@@ -12,7 +12,8 @@ assemble: assemble.o
 
 emulate: emulate.o instructions.o utils.o
 	$(CC) $(CFLAGS) -o $@ $^
-
+test: symbol_table_tests.o symbol_table.o
+	$(CC) $(CFLAGS) -o $@ $^
 
 
 
@@ -20,3 +21,4 @@ clean:
 	rm -f *.o
 	rm -f assemble
 	rm -f emulate
+	rm -f test
