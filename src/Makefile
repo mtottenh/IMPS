@@ -1,11 +1,11 @@
 CC      = gcc
-CFLAGS  = -Wall -pedantic -std=c99 -O0
+CFLAGS  = -Wall -pedantic -std=c99 -O0 -g
 
 .SUFFIXES: .c .o
 
 .PHONY: all clean
 
-all: assemble emulate
+all: assemble emulate test
 
 assemble: assemble.o
 	$(CC) $(CFLAGS) -o $@ $^

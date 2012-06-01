@@ -29,7 +29,7 @@ typedef struct {
 Symbol_Table* Symbol_Table_new(void);
 
 /* Deletes a symbol table */
-void Symbol_Table_free(Symbol_Table*);
+void Symbol_Table_free(Symbol_Table**);
 
 /* 
  * Returns the number of (key,value) pairs 
@@ -56,7 +56,7 @@ int Symbol_Table_contains(Symbol_Table*,Key);
  * Returns the first (key,value) pair in the symbol table
  * pointed to by Symbol_Table* 
  */
-Value Symbol_Table_get(Symbol_Table*,Key);
+Symbol_Table_Entry Symbol_Table_get(Symbol_Table*,Key);
 
 /*Symbol_Table_map();*/
 
