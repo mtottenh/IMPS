@@ -9,11 +9,23 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     } else {
         /*If we got proper args, try to open the input file for reading*/
-        FILE *source = fopen(argv[1],"rb");
-	if (source == 0) {
+        FILE *input;
+	 =;
+	if ((input = fopen(argv[1],"r")) == NULL) {
             printf("Error: Could not open file: %s ", argv[1]);
             return EXIT_FAILURE;
         }
+
+        /* Opens the output file to write to in binary mode. */
+        char *output_path = argv[2];
+        FILE *output;
+        if ((output = fopen(output_path, "wb")) == NULL)
+        {
+                perror("Output file couldn't be opened");
+                exit(EXIT_FAILURE);
+        }
+
+
         /* 1. Read through the binary file and construct the symbol table*/
             /* 1.1 Tokenize a line and put into  a stuct? similar to what we did with operands?*/
             /* 1.2 Each line in an assembly file is 4 addresses starting from 0 (as byte adressable memory and each line is 32 bytes)*/
