@@ -9,40 +9,46 @@
 typedef key char*;
 typedef value uint16_t;
 
+typedef struct Symbol_Table {
+	Symbol_Table_Entry *head;
+}
 /* Linekd list implementation of symbol table */
-typedef struct symbol_table {
+typedef struct Symbol_Table_Entry {
 	key k;
 	value v; 
-	symbol_table *next;
+	Symbol_Table *next;
 };
 
 /* Creates a new symbol table on the head returning a pointer*/
-symbol_table* symbol_table_new(void);
+Symbol_Table* Symbol_Table_new(void);
 
 /* Deletes a symbol table */
-void symbol_table_free(symbol_table*);
+void Symbol_Table_free(Symbol_Table*);
 
-/* Returns the size of the symbol_table pointed to by symbol_table* */
-size_t symbol_table_getLength(symbol_table*);
+/* Returns the size of the Symbol_Table pointed to by Symbol_Table* */
+size_t Symbol_Table_getLength(Symbol_Table*);
 
-/* Adds the (key,value) pair to the symbol table poitned to by symbol_table* */
-int symbol_table_put(symbol_table*,key,value);
+/* Adds the (key,value) pair to the symbol table poitned to by Symbol_Table* */
+int Symbol_Table_put(Symbol_Table*,key,value);
 
-/* Removes all (key,_) pairs from the symbol table 
- * pointed to by symbol_table* 
+/* 
+ * Removes all (key,_) pairs from the symbol table 
+ * pointed to by Symbol_Table* 
  */
-int symbol_table_remove(symbol_table*,key);
+int Symbol_Table_remove(Symbol_Table*,key);
 
-/* Checks to see if a (key,_) pair is in the symbol table 
- * pointed to by symbol_table* 
+/*
+ * Checks to see if a (key,_) pair is in the symbol table 
+ * pointed to by Symbol_Table* 
  */
-int symbol_table_contains(symbol_table*,key);
+int Symbol_Table_contains(Symbol_Table*,key);
 
-/* Returns the first (key,value) pair in the symbol table
- * pointed to by symbol_table* 
+/*
+ * Returns the first (key,value) pair in the symbol table
+ * pointed to by Symbol_Table* 
  */
-value symbol_table_get(symbol_table*,key);
+value Symbol_Table_get(Symbol_Table*,key);
 
-/*symbol_table_map();*/
+/*Symbol_Table_map();*/
 
 #endif
