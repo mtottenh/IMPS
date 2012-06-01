@@ -89,7 +89,7 @@ void lw_instruction(uint32_t instruction, State *machine_state) {
 	/* Check if memory access will be valid. If not, terminate. */
 	int location = r2 + operands.immediate;
 	if(check_mem_access(location)) {
-		fprintf(stdout, "*** Terminating...");
+		fprintf(stdout, "*** Terminating...\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -114,7 +114,7 @@ void sw_instruction(uint32_t instruction, State *machine_state) {
 	/* Check if memory access will be valid. If not, terminate. */
 	int location = r2 + operands.immediate;
 	if(check_mem_access(location)) {
-		fprintf(stdout, "*** Terminating...");
+		fprintf(stdout, "*** Terminating...\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -227,7 +227,7 @@ void jmp_instruction(uint32_t instruction, State *machine_state) {
 
 	/* Check whether the address is valid. If not, terminate. */
 	if(check_address(address)) {
-		fprintf(stdout, "*** Terminating...");
+		fprintf(stdout, "*** Terminating..\n");
 		exit(EXIT_FAILURE);
 	}
 	
@@ -252,7 +252,7 @@ void jal_instruction(uint32_t instruction, State *machine_state) {
 
 	/* Check whether the address is valid. If not, terminate. */
 	if(check_address(address)) {
-		fprintf(stdout, "*** Terminating...");
+		fprintf(stdout, "*** Terminating...\n");
 		exit(EXIT_FAILURE);
 	}
 
