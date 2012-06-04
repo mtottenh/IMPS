@@ -17,4 +17,3 @@ uint32_t assemble_rtype(Tokeniser_Line*);
 uint32_t assemble_itype(Tokeniser_Line*);
 uint32_t assemble_jtype(Tokeniser_Line*);
 uint32_t assemble_fill(Tokeniser_Line*);
-uint32_t assemble_skip(Tokeniser_Line*);
