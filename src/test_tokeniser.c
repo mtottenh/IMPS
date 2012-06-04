@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
 	tokeniser_init(input, &t);
 	while(!get_tokenised_line(t))
 	{
-		printf("Opcode : %s\n", t->line.opcode);
+		printf("%s\n", t->line.opcode);
 	}
 
 	return 0;
