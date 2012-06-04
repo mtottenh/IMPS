@@ -1,5 +1,5 @@
 CC      = gcc
-CFLAGS  = -Wall -pedantic -std=c99 -O0
+CFLAGS  = -Wall -pedantic -std=c99 -g -O0
 
 .SUFFIXES: .c .o
 
@@ -13,8 +13,8 @@ assemble: assemble.o
 emulate: emulate.o instructions.o utils.o
 	$(CC) $(CFLAGS) -o $@ $^
 
-
-
+test_tokeniser: test_tokeniser.o tokeniser.o
+	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
 	rm -f *.o
