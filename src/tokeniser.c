@@ -11,7 +11,8 @@ int get_tokenised_line(Tokeniser* tokeniser) {
 	if((fgets(buffer, 100, tokeniser->file)) == NULL)
 	{
 		return 1;
-	} 
+	}
+	if (buffer[0] == '\n') return get_tokenised_line(tokeniser);
 	tokeniser->line.num_operands = 0;
 	char* state = NULL;
 	char* token = NULL;
@@ -34,6 +35,7 @@ int get_tokenised_line(Tokeniser* tokeniser) {
 		//Decrement num operand by 2, the label and opcode.
 		tokeniser->line.label = tokens[0];
 		tokeniser->line.opcode = tokens[1];
+		printf("%s\n", tokeniser->line.label);
 		tokeniser->line.operand1 = tokens[2];
 		tokeniser->line.operand2 = tokens[3];
 		tokeniser->line.operand3 = tokens[4];
