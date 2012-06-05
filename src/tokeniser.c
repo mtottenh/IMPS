@@ -19,10 +19,10 @@ int get_tokenised_line(Tokeniser* tokeniser) {
 		return get_tokenised_line(tokeniser);
 
 	tokeniser->line.num_operands = 0;
-	char* state = NULL;
+	//char* state = NULL;
 	char* tokens[5];
 	char* buffer_ptr = buffer;
-	char *token = strtok_r(buffer_ptr, " ", &state);
+	char *token = strtok(buffer_ptr, " ");
 	for (int i = 0; (token  != NULL); i++) {
 		if (*token == '-'){
 			break;	
@@ -32,7 +32,7 @@ int get_tokenised_line(Tokeniser* tokeniser) {
 			buffer_ptr = NULL;
 		}
 		tokeniser->line.num_operands++;
-		token = strtok_r(NULL, " ", &state);
+		token = strtok(NULL, " ");
 	}
 	//Now we have a token array, with or without label and an unknown
 	//number of operands. Great.
