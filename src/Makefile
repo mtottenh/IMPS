@@ -16,7 +16,8 @@ test_sym: symbol_table_tests.o symbol_table.o
 	$(CC) $(CFLAGS) -o $@ $^
 test_token: test_tokeniser.o tokeniser.o
 	$(CC) $(CFLAGS) -o $@ $^
-
+test_pass: test_pass1.o symbol_table.o tokeniser.o pass1.o
+	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
 	rm -f *.o
@@ -24,3 +25,4 @@ clean:
 	rm -f emulate
 	rm -f test_sym
 	rm -f test_token
+	rm -f test_pass

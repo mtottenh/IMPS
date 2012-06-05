@@ -5,8 +5,7 @@
 /* Performs the first pass of generating a binary assembler file. */
 void pass1(FILE* file, Symbol_Table* table) {
 	/* Create new tokeniser pointer and initialise it. */
-	Tokeniser* tokeniser = NULL;
-	tokeniser_init(file, tokeniser);
+	Tokeniser* tokeniser = 	tokeniser_new(file);
 
 	/* Loop through the file until EOF or an error occurs. */
 	uint16_t address = 0;

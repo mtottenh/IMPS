@@ -5,7 +5,7 @@
 /* Allocates enough space for a new Symbol_Table on the heap */
 Symbol_Table* Symbol_Table_new(void) {
 	Symbol_Table* s = malloc(sizeof(Symbol_Table));
-	/* Add opcodes and Directves to the start of the symbol table */	
+	/* Add opcodes and Directives to the start of the symbol table */	
 	Symbol_Table_put(s,"halt",0); 
 	Symbol_Table_put(s,"add",1);
 	Symbol_Table_put(s,"addi",2);

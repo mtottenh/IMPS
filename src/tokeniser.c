@@ -1,15 +1,18 @@
 #include "tokeniser.h"
 
-void tokeniser_init(FILE* source, Tokeniser* tokeniser) {
-	tokeniser = (Tokeniser*)malloc(sizeof(Tokeniser));
+Tokeniser* tokeniser_new(FILE* source) {
+	
+	Tokeniser *tokeniser = malloc(sizeof(Tokeniser));
 	tokeniser->file = source;
 	tokeniser->line.num_operands = 0;
+	return tokeniser;
 }
 
 int get_tokenised_line(Tokeniser* tokeniser) {
-	char *buffer = NULL;
+	char buffer[20];
 	if((fgets(buffer, 20, tokeniser->file)) == NULL)
 	{
+		printf("Error: EOF reached\n");
 		return 1;
 	} else {
 		char* state;
