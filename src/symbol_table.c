@@ -92,10 +92,10 @@ int Symbol_Table_put(Symbol_Table* table, Key key, Value value) {
 Symbol_Table_Entry* Symbol_Table_getPrev(Symbol_Table* table, Key key) {
 	Symbol_Table_Entry* s = table->head;
 	/*If the head of the table is what is being searched for we have no previous element. */
-	if (s->key == key) {
+	if (strcmp(s->key,key) == 0) {
 		return NULL;
 	}
-	while (s->next->key != key && s != NULL) {
+	while ((strcmp(s->next->key,key) != 0) && s != NULL) {
 		s = s->next;
 	}
 	return s;
@@ -116,7 +116,7 @@ int Symbol_Table_remove(Symbol_Table* table, Key key) {
 
 int Symbol_Table_contains(Symbol_Table* table, Key key) {
 	Symbol_Table_Entry *s = table->head;
-	while (s->key != key && s != NULL) {
+	while ((strcmp(s->key,key) != 0) && s != NULL) {
 		s = s->next;
 	}
 	return s == NULL ? 1 : 0;
@@ -129,7 +129,7 @@ int Symbol_Table_contains(Symbol_Table* table, Key key) {
  */
 Symbol_Table_Entry* Symbol_Table_get(Symbol_Table* table, Key key) {
 	Symbol_Table_Entry *s = table->head;
-	while(s->key != key && s != NULL){
+	while((strcmp(s->key,key) !=0) && s != NULL){
 		s = s->next;
 	}
 	return s;

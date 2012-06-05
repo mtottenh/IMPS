@@ -9,6 +9,7 @@
  */
 
 /* Types for symbol table*/
+
 typedef char* Key;
 typedef uint16_t Value;
 /* Linekd list implementation of symbol table */
@@ -37,7 +38,7 @@ void Symbol_Table_free(Symbol_Table**);
  * in the Symbol_Table pointed to by Symbol_Table* 
  */
 size_t Symbol_Table_getLength(Symbol_Table*);
-
+Symbol_Table_Entry* Symbol_Table_getPrev(Symbol_Table*, Key);
 /* Adds the (key,value) pair to the symbol table poitned to by Symbol_Table* */
 int Symbol_Table_put(Symbol_Table*,Key,Value);
 
