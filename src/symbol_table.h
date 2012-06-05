@@ -5,6 +5,7 @@
 /* THINGS TO CONSIDER:
  * 1. Hashtable implementation of symbol table
  * 2. Binary tree implementation?
+ * 3. doubble check behaviour of Symbol_Table_free()
  */
 
 /* Types for symbol table*/
@@ -24,7 +25,7 @@ typedef struct {
 /* 
  * Creates a new symbol table on the heap
  * containing opcode and directive mappings
- * returns a pointer
+ * returns a pointer to the table
  */
 Symbol_Table* Symbol_Table_new(void);
 
@@ -48,18 +49,20 @@ int Symbol_Table_remove(Symbol_Table*,Key);
 
 /*
  * Checks to see if a (key,_) pair is in the symbol table 
- * pointed to by Symbol_Table* 
+ * pointed to by Symbol_Table*, returns 0 on key contained
+ * and 1 on key not found
  */
 int Symbol_Table_contains(Symbol_Table*,Key);
 
 /*
- * Returns the first (key,value) pair in the symbol table
- * pointed to by Symbol_Table* 
+ * Returns  a pointer to the first (key,value) pair
+ * in the symbol table pointed to by Symbol_Table* 
  */
 Symbol_Table_Entry* Symbol_Table_get(Symbol_Table*,Key);
 
 /*Symbol_Table_map();*/
-/* Prints the given symbol table to the screen*/
+
+/* Prints the given symbol table to the screen */
 void Symbol_Table_print(Symbol_Table*);
 
 #endif
