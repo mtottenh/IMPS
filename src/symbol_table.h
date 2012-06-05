@@ -56,8 +56,10 @@ int Symbol_Table_contains(Symbol_Table*,Key);
  * Returns the first (key,value) pair in the symbol table
  * pointed to by Symbol_Table* 
  */
-Symbol_Table_Entry Symbol_Table_get(Symbol_Table*,Key);
+Symbol_Table_Entry* Symbol_Table_get(Symbol_Table*,Key);
 
 /*Symbol_Table_map();*/
+/* Prints the given symbol table to the screen*/
+void Symbol_Table_print(Symbol_Table*);
 
 #endif

@@ -1,13 +1,10 @@
 #include "symbol_table.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 /* Allocates enough space for a new Symbol_Table on the heap */
 Symbol_Table* Symbol_Table_new(void) {
 	Symbol_Table* s = malloc(sizeof(Symbol_Table));
-	s->head = malloc(sizeof(Symbol_Table_Entry));
-	s->head->key = NULL;
-	s->head->value = 0;
-	s->head->next = NULL;
 	/* Add opcodes and Directves to the start of the symbol table */	
 	Symbol_Table_put(s,"halt",0); 
 	Symbol_Table_put(s,"add",1);
@@ -69,6 +66,14 @@ size_t Symbol_Table_getLength(Symbol_Table *table) {
 int Symbol_Table_put(Symbol_Table* table, Key key, Value value) {
 	/* PRE: table is a valid symbol table ie not NULL*/
 	Symbol_Table_Entry *i = table->head;
+	if (table->head == NULL) {
+		table->head = malloc(sizeof(Symbol_Table_Entry));
+		table->head->key = malloc(sizeof(key));
+		table->head->key = strncpy(table->head->key,key,sizeof(key));
+		table->head->value = value;
+		table->head->next = NULL;
+		return 0;
+	}
 	while(  i->next != NULL) {
 		 i=i->next; 	
 	}
@@ -84,24 +89,62 @@ int Symbol_Table_put(Symbol_Table* table, Key key, Value value) {
 	/* Return 0 on no error */
 	return 0;
 }
-
+Symbol_Table_Entry* Symbol_Table_getPrev(Symbol_Table* table, Key key) {
+	Symbol_Table_Entry* s = table->head;
+	/*If the head of the table is what is being searched for we have no previous element. */
+	if (s->key == key) {
+		return NULL;
+	}
+	while (s->next->key != key && s != NULL) {
+		s = s->next;
+	}
+	return s;
+}
 int Symbol_Table_remove(Symbol_Table* table, Key key) {
-/*	current = get(key)
-	prev = get_prev(key)
-	next = get_next(key)
-	prev->next = next
+	Symbol_Table_Entry *current = Symbol_Table_get(table,key);
+	Symbol_Table_Entry *prev = Symbol_Table_getPrev(table,key);
+	if (prev == NULL) {
+		table->head = current->next;
+	} else {
+		prev->next = current->next;
+	}
+	free(current->key);
 	free(current);
-	current = NULL;*/
+	current = NULL;
 	return 0;
 }
 
 int Symbol_Table_contains(Symbol_Table* table, Key key) {
-	return 0;
+	Symbol_Table_Entry *s = table->head;
+	while (s->key != key && s != NULL) {
+		s = s->next;
+	}
+	return s == NULL ? 1 : 0;
 }
 
-Symbol_Table_Entry Symbol_Table_get(Symbol_Table* table, Key key) {
-	Symbol_Table_Entry s;
+/*
+ * Returns a the given (key,value) pair corresponding to the given key 
+ * Note that if key is not in the table, s will become equal to NULL
+ * the last entry in the list. 
+ */
+Symbol_Table_Entry* Symbol_Table_get(Symbol_Table* table, Key key) {
+	Symbol_Table_Entry *s = table->head;
+	while(s->key != key && s != NULL){
+		s = s->next;
+	}
 	return s;
 }
 
 
+void Symbol_Table_print(Symbol_Table* table) {
+	if (table == NULL) {
+		printf("Erorr: Not a valid symbol table, please call Symbol_Table_new()\n");
+		return;
+	}
+
+	Symbol_Table_Entry *s = table->head;
+	for (;s != NULL; s = s->next) {
+
+		printf("Key: %s\t Value: %d\t", s->key, s->value);
+	}
+}
