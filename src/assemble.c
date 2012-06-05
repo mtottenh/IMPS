@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
     } else {
         /*If we got proper args, try to open the input file for reading*/
         FILE *input;
-	 =;
+
 	if ((input = fopen(argv[1],"r")) == NULL) {
             printf("Error: Could not open file: %s ", argv[1]);
             return EXIT_FAILURE;
