@@ -8,7 +8,8 @@ int main(int argc, char** argv) {
             printf("Error: Could not open file: %s ", argv[1]);
             return EXIT_FAILURE;
         }
-	Tokeniser *t = tokeniser_new(input);
+	Tokeniser *t = NULL;
+	tokeniser_init(input, &t);
 	printf("Tokeniser created!\n");
 	while(!get_tokenised_line(t))
 	{
