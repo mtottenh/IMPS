@@ -21,6 +21,7 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table); {
 	while(get_tokenised_line(tokeniser) == 0) {
 		/* Get the tokenised line and given opcode. */
 		line = tokeniser->line;
+		/*This needs to change as get returns a pointer to a (key,value) pair not just the value*/
 		opcode = (uint32_t) symbol_table_get(table, line->opcode);
 
 		/* Special case! Opcode 20 = skip. */
@@ -77,6 +78,7 @@ void setup_pointers(FunctionPointer array[]) {
 	array[17] = &assemble_jtype; /* jal */
 	array[18] = &assemble_rtype; /* out */
 	array[19] = &assemble_fill; /* .fill directive */
+	/*What about .skip??*/
 }
 
 uint32_t eval_immediate(char* immediate, uint32_t opcode, Symbol_Table* table) {
@@ -85,7 +87,9 @@ uint32_t eval_immediate(char* immediate, uint32_t opcode, Symbol_Table* table) {
 	uint32_t result = 0;
 
 	/* Check if a mapping exists in the symbol table. */
+	/*Again this needs to change as get returns a pointer to a (key,value) pair not an int*/
 	uint32_t label_value = (uint32_t) symbol_table_get(immediate);
+
 	if (label_value != NULL) {
 		result = label_value;
 	}
