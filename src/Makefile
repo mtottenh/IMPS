@@ -22,3 +22,4 @@ clean:
 	rm -f assemble
 	rm -f emulate
 	rm -f test
+	rm -f test_tokeniser
