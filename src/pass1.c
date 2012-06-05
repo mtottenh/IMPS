@@ -5,24 +5,24 @@
 /* Performs the first pass of generating a binary assembler file. */
 void pass1(FILE* file, Symbol_Table* table) {
 	/* Create new tokeniser pointer and initialise it. */
-	Tokeniser* tokeniser;
-	tokeniser_init(tokeniser);
+	Tokeniser* tokeniser = NULL;
+	tokeniser_init(file, tokeniser);
 
 	/* Loop through the file until EOF or an error occurs. */
 	uint16_t address = 0;
 	char* label;
-	Tokeniser_Line* line;
+	Tokeniser_Line line;
 		
 	while(get_tokenised_line(tokeniser) == 0) {
 		line = tokeniser->line;
-		label = line->label;
+		label = line.label;
 
 		/* 
 		 * If we have a label, record it and the address in the symbol
 		 * table. 
 		 */
 		if (label != NULL) {
-			symbol_table_put(table, label, address);	
+			Symbol_Table_put(table, label, address);	
 		}
 
 		address += 4;
