@@ -1,18 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-typedef struct {
+typedef struct Tokeniser_Line {
 	char* label;
 	char* opcode;
 	char* operand1;
 	char* operand2;
 	char* operand3;
 	int num_operands;
-} Tokenised_Line;
+} Tokeniser_Line;
 
-typedef struct {
+typedef struct Tokeniser {
 	FILE *file;
-	Tokenised_Line line;
+	Tokeniser_Line line;
 } Tokeniser;
 
 void tokeniser_init(FILE*, Tokeniser*);

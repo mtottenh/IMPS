@@ -1,6 +1,6 @@
 #include "pass2.h"
 
-void pass2(FILE* input, FILE* output, Symbol_Table* table); {
+void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 	/* Create tokeniser. */
 	Tokeniser* tokeniser;
 	tokeniser_init(input, tokeniser);
@@ -13,7 +13,7 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table); {
 	uint32_t buffer[2048];
 
 	/* Loop through the input file via the tokeniser until EOF or error occurs. */
-	Tokeniser_Line* line;
+	Tokeniser_Line line;
 	uint32_t assembled_line;
 	uint32_t opcode;
 	uint16_t index = 0;
@@ -22,11 +22,12 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table); {
 		/* Get the tokenised line and given opcode. */
 		line = tokeniser->line;
 		/*This needs to change as get returns a pointer to a (key,value) pair not just the value*/
-		opcode = (uint32_t) symbol_table_get(table, line->opcode);
+		Symbol_Table_Entry* opcode_entry = Symbol_Table_get(table, line.opcode);
+		opcode = (uint32_t) opcode_entry->value;
 
 		/* Special case! Opcode 20 = skip. */
 		if (opcode == 20) {
-			char* operand1 = line->operand1;
+			char* operand1 = line.operand1;
 			
 			/* Reserve n words (32 bits of 0). */
 			for(int i = 0; i < atoi(operand1); i++) {
@@ -78,7 +79,6 @@ void setup_pointers(FunctionPointer array[]) {
 	array[17] = &assemble_jtype; /* jal */
 	array[18] = &assemble_rtype; /* out */
 	array[19] = &assemble_fill; /* .fill directive */
-	/*What about .skip??*/
 }
 
 uint32_t eval_immediate(char* immediate, uint32_t opcode, Symbol_Table* table) {
@@ -88,15 +88,15 @@ uint32_t eval_immediate(char* immediate, uint32_t opcode, Symbol_Table* table) {
 
 	/* Check if a mapping exists in the symbol table. */
 	/*Again this needs to change as get returns a pointer to a (key,value) pair not an int*/
-	uint32_t label_value = (uint32_t) symbol_table_get(immediate);
+	Symbol_Table_Entry* label_entry = Symbol_Table_get(table, immediate);
 
-	if (label_value != NULL) {
-		result = label_value;
+	if (label_entry != NULL) {
+		result = (uint32_t) label_entry->value;
 	}
 
 	else {
 		/*
-		 * If the value is hex, strol() with base 0 will detect it as
+		 * If the value is hex, strtol() with base 0 will detect it as
 		 * hex (due to prefix 0x), otherwise base 10.
 		 */
 		result = (uint32_t) strtol(immediate, NULL, 0);
@@ -113,7 +113,7 @@ uint32_t eval_immediate(char* immediate, uint32_t opcode, Symbol_Table* table) {
 	return result;
 }
 
-uint32_t eval_register(uint32_t opcode, char* regstring) {
+uint32_t eval_register(char* regstring) {
 	/* Increment pointer to remove $ character. */
 	regstring++;
  	return (uint32_t) atoi(regstring);
