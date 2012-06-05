@@ -1,5 +1,5 @@
 CC      = gcc
-CFLAGS  = -Wall -pedantic -std=c99 -O0 -g
+CFLAGS  = -Wall -pedantic -std=c99 -O0 -g -D_REENTRANT
 
 .SUFFIXES: .c .o
 

@@ -15,6 +15,6 @@ typedef struct Tokeniser {
 	Tokeniser_Line line;
 } Tokeniser;
 
-Tokeniser* tokeniser_new(FILE*);
+void tokeniser_init(FILE*, Tokeniser**);
 int get_tokenised_line(Tokeniser*);
 void free_tokeniser(Tokeniser*);
