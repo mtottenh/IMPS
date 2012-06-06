@@ -13,7 +13,8 @@ int main(int argc, char** argv) {
 	printf("Tokeniser created!\n");
 	while(!get_tokenised_line(t))
 	{
-		printf("%s", t->line.opcode);
+		printf("Operand 1 : %s\n", t->line.operand1);
+
 	}
 
 	return 0;
