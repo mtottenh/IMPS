@@ -16,7 +16,7 @@ test_sym: symbol_table_tests.o symbol_table.o
 	$(CC) $(CFLAGS) -o $@ $^
 test_token: test_tokeniser.o tokeniser.o
 	$(CC) $(CFLAGS) -o $@ $^
-test_pass: test_pass1.o symbol_table.o tokeniser.o pass1.o
+test_pass: test_pass2.o symbol_table.o tokeniser.o pass1.o pass2.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
