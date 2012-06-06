@@ -32,7 +32,7 @@ int get_tokenised_line(Tokeniser* tokeniser) {
 			buffer_ptr = NULL;
 		}
 		tokeniser->line.num_operands++;
-		token = strtok(NULL, " ");
+		token = strtok(buffer_ptr, " ");
 	}
 	//Now we have a token array, with or without label and an unknown
 	//number of operands. Great.
