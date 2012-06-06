@@ -16,13 +16,11 @@ void pass1(FILE* file, Symbol_Table* table) {
 	while(get_tokenised_line(tokeniser) == 0) {
 		line = tokeniser->line;
 		label = line.label;
-		printf("Getting line from file\n");
 		/* 
 		 * If we have a label, record it and the address in the symbol
 		 * table. 
 		 */
 		if (label != NULL) {
-			printf("Adding to symbol Table\n");
 			Symbol_Table_put(table, label, address);	
 		}
 

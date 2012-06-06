@@ -3,7 +3,7 @@
 void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 	/* Create tokeniser. */
 	Tokeniser* tokeniser;
-	tokeniser_init(input, tokeniser);
+	tokeniser_init(input, &tokeniser);
 
 	/* Create array of function pointers. */
 	FunctionPointer func_pointers[21] = {NULL};
@@ -21,7 +21,7 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 	while(get_tokenised_line(tokeniser) == 0) {
 		/* Get the tokenised line and given opcode. */
 		line = tokeniser->line;
-		/*This needs to change as get returns a pointer to a (key,value) pair not just the value*/
+		printf("opcode received : %s\n",line.opcode);
 		Symbol_Table_Entry* opcode_entry = Symbol_Table_get(table, line.opcode);
 		opcode = (uint32_t) opcode_entry->value;
 

@@ -18,9 +18,6 @@ int main(int argc, char** argv) {
 		printf("Operand 1 : %s\n", t->line.operand1);
 		printf("Operand 2 : %s\n", t->line.operand2);
 		printf("Operand 3 : %s\n", t->line.operand3);
-
-
-
 	}
 
 	return 0;

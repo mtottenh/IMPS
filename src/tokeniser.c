@@ -1,7 +1,6 @@
 #include "tokeniser.h"
 //#define _POSIX_C_SOURCE 200809L /* or greater */
 
-
 void tokeniser_init(FILE* source, Tokeniser** tokeniser) {
 	*tokeniser = malloc(sizeof(Tokeniser));
 	Tokeniser* t = *tokeniser;
@@ -64,7 +63,7 @@ int get_tokenised_line(Tokeniser* tokeniser) {
 		copy_token(&tokeniser->line.operand1,tokens[1]);
 		copy_token(&tokeniser->line.operand2,tokens[2]);
 		copy_token(&tokeniser->line.operand3,tokens[3]);
-	}
+		}
 	
 	return 0;
 	

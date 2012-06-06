@@ -5,7 +5,8 @@
 int main(void) {
 	Symbol_Table* s = Symbol_Table_new();
 	printf("\nLength of symbol Table is: %d\n", (int)Symbol_Table_getLength(s));
-//	printf("Opcode halt is: ", Symbol_Table_get(s,"halt");
+
+	printf("Opcode halt is:%d ", Symbol_Table_getPrev(s,"sub")->value);
 	printf("Value of s: %p \tValue of head of list: %d\n",(void*)s,s->head->value);
 	Symbol_Table_print(s);
 	Symbol_Table_free(&s);
