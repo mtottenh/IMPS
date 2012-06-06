@@ -1,4 +1,5 @@
 #include "pass2.h"
+#include "pass1.h"
 
 int main(int argc, char** argv) {
 	FILE* input = fopen(argv[1], "rt");

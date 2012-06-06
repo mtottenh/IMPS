@@ -9,7 +9,7 @@ void tokeniser_init(FILE* source, Tokeniser** tokeniser) {
 /* allocates dest on the heap and coppies the value of src into dest*/
 int copy_token(char **dest, const void *src) {
 	if (src == NULL) {
-		dest = NULL; 
+		*dest = NULL; 
 		return 1;
 	}
 	*dest = malloc(strlen(src));
@@ -19,6 +19,7 @@ int copy_token(char **dest, const void *src) {
 int get_tokenised_line(Tokeniser* tokeniser) {
 	char buffer[100];
 	memset(buffer, 0, sizeof(buffer));
+
 	if((fgets(buffer, 100, tokeniser->file)) == NULL)
 	{
 		printf("Error: EOF reached\n");
@@ -32,17 +33,14 @@ int get_tokenised_line(Tokeniser* tokeniser) {
 	char* tokens[5];
 	memset(tokens, '\0', sizeof(tokens));
 	char* buffer_ptr = buffer;
-	char *token = strtok(buffer_ptr, " ");
-	for (int i = 0; (token  != NULL); i++) {
-		if (*token == '-'){
-			break;	
-		}
+	char *token = strtok(buffer_ptr, " \n");
+	for (int i = 0; (token  != NULL) && i < 4; i++) {
 		tokens[i] = token;
 		if (buffer_ptr != NULL) {
 			buffer_ptr = NULL;
 		}
 		tokeniser->line.num_operands++;
-		token = strtok(buffer_ptr, " ");
+		token = strtok(buffer_ptr, " \n");
 	}
 	//Now we have a token array, with or without label and an unknown
 	//number of operands. Great.

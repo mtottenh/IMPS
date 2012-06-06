@@ -22,8 +22,12 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 		/* Get the tokenised line and given opcode. */
 		line = tokeniser->line;
 		printf("opcode received : %s\n",line.opcode);
-		Symbol_Table_Entry* opcode_entry = Symbol_Table_get(table, line.opcode);
-		opcode = (uint32_t) opcode_entry->value;
+		printf("i heard you like operands: %s\n", line.operand1);
+		if ( Symbol_Table_get(table, line.opcode)  == NULL  ) {
+			printf("WHAT YOU DOIN SON? I AM DISSAPOINT");
+		}
+		opcode = Symbol_Table_get(table,line.opcode)->value;
+		printf("Opcode: %u", opcode);
 
 		/* Special case! Opcode 20 = skip. */
 		if (opcode == 20) {
@@ -47,6 +51,8 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 			buffer[index] = assembled_line;
 			index++;
 		}
+		printf("\nAssembled line: %u\n", assembled_line);
+
 	}
 
 	/* Write buffer to output file. */
@@ -86,6 +92,10 @@ uint32_t eval_immediate(char* immediate, uint32_t opcode, Symbol_Table* table) {
 	
 	uint32_t result = 0;
 
+	if (immediate == NULL) {
+		return result;
+	}
+
 	/* Check if a mapping exists in the symbol table. */
 	/*Again this needs to change as get returns a pointer to a (key,value) pair not an int*/
 	Symbol_Table_Entry* label_entry = Symbol_Table_get(table, immediate);
@@ -98,8 +108,17 @@ uint32_t eval_immediate(char* immediate, uint32_t opcode, Symbol_Table* table) {
 		/*
 		 * If the value is hex, strtol() with base 0 will detect it as
 		 * hex (due to prefix 0x), otherwise base 10.
+		 *
 		 */
-		result = (uint32_t) strtol(immediate, NULL, 0);
+		int32_t value = (int32_t) strtol(immediate, NULL, 0);
+
+		if (value < 0) {
+			value *= -1;
+			uint32_t mask = 0x8000;
+			value |= mask;
+		}
+
+		result = (uint32_t) value;
 	}
 
 	/*
@@ -116,31 +135,34 @@ uint32_t eval_immediate(char* immediate, uint32_t opcode, Symbol_Table* table) {
 uint32_t eval_register(char* regstring) {
 	/* Increment pointer to remove $ character. */
 	regstring++;
+	printf("Reg string: %s", regstring);
  	return (uint32_t) atoi(regstring);
 }
 
-uint32_t assemble_halt(uint32_t opcode, Tokeniser_Line* line, 
+uint32_t assemble_halt(uint32_t opcode, Tokeniser_Line line, 
 	Symbol_Table* table) {
 	/* Halt instruction is simply 32 zero bits. Return 0. */
 	return 0;
 }
 
-uint32_t assemble_rtype(uint32_t opcode, Tokeniser_Line* line,
+uint32_t assemble_rtype(uint32_t opcode, Tokeniser_Line line,
 	 Symbol_Table* table) {
 	/* All operands are registers. Get R1, R2, R3... */
-	uint32_t result = opcode << 25;
+	uint32_t result = opcode << 26;
 
-	char* operand1 = line->operand1;
+	printf("Opcode: %u, operand1: %s, operand2: %s, operand3: %s",
+		opcode, line.operand1, line.operand2, line.operand3);
+	char* operand1 = line.operand1;
 	if (operand1 != NULL) {
 		result |= (eval_register(operand1) << 21);
 	}
 
-	char* operand2 = line->operand2;
+	char* operand2 = line.operand2;
 	if (operand2 != NULL) {
 		result |= (eval_register(operand2) << 16);
 	}
 
-	char* operand3 = line->operand3;
+	char* operand3 = line.operand3;
 	if (operand3 != NULL) {
 		result |= (eval_register(operand3) << 11);
 	}
@@ -148,36 +170,37 @@ uint32_t assemble_rtype(uint32_t opcode, Tokeniser_Line* line,
 	return result;
 }
 
-uint32_t assemble_itype(uint32_t opcode, Tokeniser_Line* line,
+uint32_t assemble_itype(uint32_t opcode, Tokeniser_Line line,
 	 Symbol_Table* table) {
 	/* Operands 1 and 2 are registers. Get R1 and R2. */
-	uint32_t result = opcode << 25;
+	uint32_t result = opcode << 26;
 
-	char* operand1 = line->operand1;
+	char* operand1 = line.operand1;
 	result |= (eval_register(operand1) << 21);
 
-	char* operand2 = line->operand2;
+	char* operand2 = line.operand2;
 	result |= (eval_register(operand2) << 16);
 
 	/* Operand 3 is an immediate value. */
-	char* operand3 = line->operand3;
+	char* operand3 = line.operand3;
 	result |= eval_immediate(operand3, opcode, table);
 
 	return result;
 }
 
-uint32_t assemble_jtype(uint32_t opcode, Tokeniser_Line* line, Symbol_Table* table) {
+uint32_t assemble_jtype(uint32_t opcode, Tokeniser_Line line,
+	 Symbol_Table* table) {
 	/* One operand, which is an absolute immediate address. */
-	uint32_t result = opcode << 25;
-	char* operand1 = line->operand1;
+	uint32_t result = opcode << 26;
+	char* operand1 = line.operand1;
 	
 	return result |= eval_immediate(operand1, opcode, table);
 }
 
-uint32_t assemble_fill(uint32_t opcode, Tokeniser_Line* line, 
+uint32_t assemble_fill(uint32_t opcode, Tokeniser_Line line, 
 	Symbol_Table* table) {
 	/* Get operand 1, convert to an integer and return. */
-	char* operand1 = line->operand1;
+	char* operand1 = line.operand1;
 
 	return (uint32_t) atoi(operand1);
 }

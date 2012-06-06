@@ -129,7 +129,8 @@ int Symbol_Table_contains(Symbol_Table* table, Key key) {
  */
 Symbol_Table_Entry* Symbol_Table_get(Symbol_Table* table, Key key) {
 	Symbol_Table_Entry *s = table->head;
-	while((strcmp(s->key,key) !=0) && s != NULL){
+	
+	while((s != NULL) && (strcmp(s->key,key) !=0)){
 		s = s->next;
 	}
 	return s;
