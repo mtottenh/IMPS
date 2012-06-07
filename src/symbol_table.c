@@ -68,8 +68,8 @@ int Symbol_Table_put(Symbol_Table* table, Key key, Value value) {
 	Symbol_Table_Entry *i = table->head;
 	if (table->head == NULL) {
 		table->head = malloc(sizeof(Symbol_Table_Entry));
-		table->head->key = malloc(sizeof(key));
-		table->head->key = strncpy(table->head->key,key,sizeof(key));
+		table->head->key = malloc(strlen(key));
+		table->head->key = strncpy(table->head->key,key,strlen(key));
 		table->head->value = value;
 		table->head->next = NULL;
 		return 0;
@@ -82,8 +82,8 @@ int Symbol_Table_put(Symbol_Table* table, Key key, Value value) {
 	i->next = malloc(sizeof(Symbol_Table_Entry));
 	i = i->next;
 	/* Set it to hold (key,value) and point to NULL */
-	i->key = malloc(sizeof(key));
-	strncpy(i->key,key,sizeof(key));
+	i->key = malloc(strlen(key));
+	strncpy(i->key,key,strlen(key));
 	i->value = value;
 	i->next = NULL;
 	/* Return 0 on no error */

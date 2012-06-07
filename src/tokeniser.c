@@ -33,14 +33,14 @@ int get_tokenised_line(Tokeniser* tokeniser) {
 	char* tokens[5];
 	memset(tokens, '\0', sizeof(tokens));
 	char* buffer_ptr = buffer;
-	char *token = strtok(buffer_ptr, " \n");
-	for (int i = 0; (token  != NULL) && i < 4; i++) {
+	char *token = strtok(buffer_ptr, " \n\t");
+	for (int i = 0; (token  != NULL) && i <= 4; i++) {
 		tokens[i] = token;
 		if (buffer_ptr != NULL) {
 			buffer_ptr = NULL;
 		}
 		tokeniser->line.num_operands++;
-		token = strtok(buffer_ptr, " \n");
+		token = strtok(buffer_ptr, " \n\t");
 	}
 	//Now we have a token array, with or without label and an unknown
 	//number of operands. Great.

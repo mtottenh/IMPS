@@ -1,6 +1,10 @@
 #include "pass2.h"
 
 void pass2(FILE* input, FILE* output, Symbol_Table* table) {
+	printf("****PASS 2****\n\n");
+	printf("**Symbol Table Recieved**\n");
+	Symbol_Table_print(table);
+	printf("**End Table**\n");
 	/* Create tokeniser. */
 	Tokeniser* tokeniser;
 	tokeniser_init(input, &tokeniser);
@@ -21,42 +25,65 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 	while(get_tokenised_line(tokeniser) == 0) {
 		/* Get the tokenised line and given opcode. */
 		line = tokeniser->line;
-		printf("opcode received : %s\n",line.opcode);
-		printf("i heard you like operands: %s\n", line.operand1);
-		if ( Symbol_Table_get(table, line.opcode)  == NULL  ) {
-			printf("WHAT YOU DOIN SON? I AM DISSAPOINT");
-		}
 		opcode = Symbol_Table_get(table,line.opcode)->value;
-		printf("Opcode: %u", opcode);
+		printf("Opcode: %u\t", opcode);
 
 		/* Special case! Opcode 20 = skip. */
-		if (opcode == 20) {
-			char* operand1 = line.operand1;
-			
-			/* Reserve n words (32 bits of 0). */
-			for(int i = 0; i < atoi(operand1); i++) {
-				buffer[index] = 0;
+		switch(opcode) {
+			case 20:
+			{
+				 char* operand1 = line.operand1;
+				
+				/* Reserve n words (32 bits of 0). */
+				for(int i = 0; i < atoi(operand1); i++) {
+					//buffer[index] = 0;
+					index++;
+				}			
+			}
+			break;
+			case 9:
+			case 10:
+			case 11:
+			case 12: 
+			case 13:
+			case 14:
+			{
+				
+			        uint32_t offset = eval_immediate(line.operand3,opcode,table);
+				printf("\nBranch instruction detected\n");
+				printf("Index: %x\t Offset w/o index: %x\t", index, offset);
+				offset /= 4;
+				offset -= index;
+				assembled_line = opcode << 26;
+				assembled_line |= (eval_register(line.operand1) << 21);
+				assembled_line |= (eval_register(line.operand2) << 16);
+				assembled_line |= offset;
+				printf("Offset: %x\tAssembled Line: %x\n", offset,assembled_line);
+				buffer[index] = assembled_line;
 				index++;
-			}			
+			}
+			break;
+			default: 
+			{
+				/*
+			 	 * Get the assembled line and add it to the line at the 
+		 		 * current index of the buffer.
+				 */
+				assembled_line = 
+					func_pointers[opcode](opcode, line, table);
+				buffer[index] = assembled_line;
+				index++;
+				printf("\nAssembled line: %x\n", assembled_line);
+			}
+			break;
 		}
+		printf(	"***NEXT INSTRUCTION***\n");
 
-		else {
-
-			/*
-		 	 * Get the assembled line and add it to the line at the 
-		 	 * current index of the buffer.
-			 */
-			assembled_line = 
-				func_pointers[opcode](opcode, line, table);
-			buffer[index] = assembled_line;
-			index++;
-		}
-		printf("\nAssembled line: %u\n", assembled_line);
 
 	}
 
 	/* Write buffer to output file. */
-	fwrite(buffer, sizeof(uint32_t), (index + 1), output);
+	fwrite(buffer, sizeof(uint32_t), index, output);
 }
 
 void setup_pointers(FunctionPointer array[]) {
@@ -93,49 +120,37 @@ uint32_t eval_immediate(char* immediate, uint32_t opcode, Symbol_Table* table) {
 	uint32_t result = 0;
 
 	if (immediate == NULL) {
+		printf("\n******NULL PASSED TO EVAL IMMEDIATE RETURNING 0*****\n");
 		return result;
 	}
 
 	/* Check if a mapping exists in the symbol table. */
 	/*Again this needs to change as get returns a pointer to a (key,value) pair not an int*/
 	Symbol_Table_Entry* label_entry = Symbol_Table_get(table, immediate);
-
+	printf("Label:%s\t", immediate);
 	if (label_entry != NULL) {
 		result = (uint32_t) label_entry->value;
-	}
-
-	else {
+		printf("Label's Value in Table: %u\n", result);
+	} else {
 		/*
 		 * If the value is hex, strtol() with base 0 will detect it as
 		 * hex (due to prefix 0x), otherwise base 10.
-		 *
 		 */
 		int32_t value = (int32_t) strtol(immediate, NULL, 0);
-
-		if (value < 0) {
-			value *= -1;
-			uint32_t mask = 0x8000;
-			value |= mask;
-		}
-
 		result = (uint32_t) value;
-	}
 
-	/*
-	 * Finally, check if we're on a branching instruction. If so, the immediate 
-	 * value is an offset in words, so multiply it by 4 (1 word = 4 bytes).
-	 */
-	if (opcode > 8 && opcode < 18) {
-		result *= 4;
 	}
-
+	
+	
+	result &= 0x0000FFFF; 
+	//printf("Immediate Value: %u", result);
 	return result;
 }
 
 uint32_t eval_register(char* regstring) {
 	/* Increment pointer to remove $ character. */
 	regstring++;
-	printf("Reg string: %s", regstring);
+	//printf("Reg string: %s\t", regstring);
  	return (uint32_t) atoi(regstring);
 }
 
@@ -150,8 +165,8 @@ uint32_t assemble_rtype(uint32_t opcode, Tokeniser_Line line,
 	/* All operands are registers. Get R1, R2, R3... */
 	uint32_t result = opcode << 26;
 
-	printf("Opcode: %u, operand1: %s, operand2: %s, operand3: %s",
-		opcode, line.operand1, line.operand2, line.operand3);
+
+	printf("OP1: %s, OP2: %s, OP3: %s", line.operand1, line.operand2, line.operand3);
 	char* operand1 = line.operand1;
 	if (operand1 != NULL) {
 		result |= (eval_register(operand1) << 21);
@@ -183,9 +198,11 @@ uint32_t assemble_itype(uint32_t opcode, Tokeniser_Line line,
 
 	/* Operand 3 is an immediate value. */
 	char* operand3 = line.operand3;
-	result |= eval_immediate(operand3, opcode, table);
 
-	return result;
+	printf("\nOP1: %s\tOP2: %s\tOP3: %s\n", line.operand1,line.operand2,line.operand3);
+	uint32_t result2 = eval_immediate(operand3, opcode, table);
+	printf("Immediate value for I type: %u", result2);
+	return result |= result2;
 }
 
 uint32_t assemble_jtype(uint32_t opcode, Tokeniser_Line line,
@@ -194,7 +211,10 @@ uint32_t assemble_jtype(uint32_t opcode, Tokeniser_Line line,
 	uint32_t result = opcode << 26;
 	char* operand1 = line.operand1;
 	
-	return result |= eval_immediate(operand1, opcode, table);
+	
+	uint32_t result2 = eval_immediate(operand1, opcode, table);
+	printf("\tJump Location: %u\n", result2);
+	return result |= result2;
 }
 
 uint32_t assemble_fill(uint32_t opcode, Tokeniser_Line line, 
