@@ -7,7 +7,29 @@
  * 2. Binary tree implementation?
  * 3. doubble check behaviour of Symbol_Table_free()
  */
-
+enum opcodes {
+	HALT,
+	ADD,
+	ADDI,
+	SUB,
+	SUBI,
+	MUL,
+	MULI,
+	LW,
+	SW,
+	BEQ,
+	BNE,
+	BLT,
+	BGT,
+	BLE,
+	BGE,
+	JMP,
+	JR,
+	JAL,
+	OUT,
+	FILL,
+	SKIP
+};
 /* Types for symbol table*/
 
 typedef char* Key;
