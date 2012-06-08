@@ -19,13 +19,16 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 	/* Loop through the input file via the tokeniser until EOF or error occurs. */
 	Tokeniser_Line line;
 	uint32_t assembled_line;
-	uint32_t opcode;
-	uint16_t index = 0;
+	uint16_t address = 0;
+	uint32_t opcode = 0;
+	Instruction* instruction_data = malloc(sizeof(Instruction));
 
 	while(get_tokenised_line(tokeniser) == 0) {
 		/* Get the tokenised line and given opcode. */
 		line = tokeniser->line;
-		opcode = Symbol_Table_get(table,line.opcode)->value;
+		opcode = Symbol_Table_get(table, line.opcode)->value;
+		instruction_data->opcode = 
+			Symbol_Table_get(table, line.opcode)->value;
 		printf("Opcode: %u\t", opcode);
 
 		/* Special case! Opcode 20 = skip. */
@@ -36,8 +39,8 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 				
 				/* Reserve n words (32 bits of 0). */
 				for(int i = 0; i < atoi(operand1); i++) {
-					//buffer[index] = 0;
-					index++;
+					//buffer[address] = 0;
+					address++;
 				}			
 			}
 			break;
@@ -51,28 +54,28 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 				
 			        uint32_t offset = eval_immediate(line.operand3,opcode,table);
 				printf("\nBranch instruction detected\n");
-				printf("Index: %x\t Offset w/o index: %x\t", index, offset);
+				printf("Index: %x\t Offset w/o address: %x\t", address, offset);
 				offset /= 4;
-				offset -= index;
+				offset -= address;
 				assembled_line = opcode << 26;
 				assembled_line |= (eval_register(line.operand1) << 21);
 				assembled_line |= (eval_register(line.operand2) << 16);
 				assembled_line |= offset;
 				printf("Offset: %x\tAssembled Line: %x\n", offset,assembled_line);
-				buffer[index] = assembled_line;
-				index++;
+				buffer[address] = assembled_line;
+				address++;
 			}
 			break;
 			default: 
 			{
 				/*
 			 	 * Get the assembled line and add it to the line at the 
-		 		 * current index of the buffer.
+		 		 * current address of the buffer.
 				 */
 				assembled_line = 
 					func_pointers[opcode](opcode, line, table);
-				buffer[index] = assembled_line;
-				index++;
+				buffer[address] = assembled_line;
+				address++;
 				printf("\nAssembled line: %x\n", assembled_line);
 			}
 			break;
@@ -83,7 +86,11 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 	}
 
 	/* Write buffer to output file. */
-	fwrite(buffer, sizeof(uint32_t), index, output);
+	fwrite(buffer, sizeof(uint32_t), address, output);
+
+	/* Free memory for tokeniser and instructions struct. */
+	free_tokeniser(tokeniser);
+	free(instruction_data);
 }
 
 void setup_pointers(FunctionPointer array[]) {
