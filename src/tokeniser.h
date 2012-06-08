@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Line width assumed to be <= 100 in source file. */
+#define BUFFER_SIZE 100
+
 typedef struct Tokeniser_Line {
 	char* label;
 	char* opcode;
@@ -18,7 +21,7 @@ typedef struct Tokeniser {
 	Tokeniser_Line line;
 } Tokeniser;
 
-// Definition for strtok_r, not defined in C99. See man strtok_r for details
+/* Definition for strtok_r, not defined in C99. See man strtok_r for details */
 char* strtok_r(char*, const char*, char**);
 
 Tokeniser* tokeniser_new(FILE*);

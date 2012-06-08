@@ -33,28 +33,26 @@ void copy_token(char **dest, const void *src) {
 	if (src == NULL) {
 		*dest = NULL; 
 	} else {
-	/* Reallocate memory and clear out previous data. */
-	*dest = realloc(*dest, strlen(src));
-	if (*dest == NULL) {
+		/* Reallocate memory and clear out previous data. */
+		*dest = realloc(*dest, strlen(src));
+		if (*dest == NULL) {
 			perror("Couldn't reallocate memory for *dest");
 			exit(EXIT_FAILURE);
 		}		
-		memset(*dest, '\0', sizeof(*dest));
+		memset(*dest, '\0', sizeof(src));
 		strncpy(*dest, src, strlen(src));
 	}
 }
 
 int get_tokenised_line(Tokeniser* tokeniser) {
-	//What should I assume about line length?
-	char buffer[100];
+	char buffer[BUFFER_SIZE];
 	memset(buffer, '\0', sizeof(buffer));
 
 	/*
-	 * Get the first 100 *CHECK* characters from tokeniser->file and
+	 * Get the first BUFFER_SIZE - 1 characters from tokeniser->file and
 	 * store them in buffer
 	 */
-	if((fgets(buffer, 100, tokeniser->file)) == NULL) {
-		printf("Error: EOF reached\n");
+	if((fgets(buffer, BUFFER_SIZE, tokeniser->file)) == NULL) {
 		return EXIT_FAILURE;
 	}
 	
