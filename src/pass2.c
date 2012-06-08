@@ -46,29 +46,7 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 				assemble_skip(instr_data);
 			}
 			break;
-			case 9:
-			case 10:
-			case 11:
-			case 12: 
-			case 13:
-			case 14:
-			{
-				
-			        uint32_t offset = eval_immediate(line.operand3,opcode,table);
-				printf("\nBranch instruction detected\n");
-				printf("Index: %x\t Offset w/o address: %x\t", address, offset);
-				offset /= 4;
-				offset -= address;
-				assembled_line = opcode << 26;
-				assembled_line |= (eval_register(line.operand1) << 21);
-				assembled_line |= (eval_register(line.operand2) << 16);
-				assembled_line |= offset;
-				printf("Offset: %x\tAssembled Line: %x\n", offset,assembled_line);
-				buffer[address] = assembled_line;
-				address++;
-			}
-			break;
-			default: 
+		default: 
 			{
 				/*
 			 	 * Get the assembled line and add it to the line at the 
@@ -192,6 +170,12 @@ uint32_t assemble_rtype(Instruction instruction) {
 }
 
 uint32_t assemble_itype(Instruction instruction) {
+	/* Is it a branch instruction? */
+	if (instruction.opcode >= START_BRANCH 
+		&& instruction.opcode <= END_BRANCH) {
+		return assemble_branch(instruction);
+	}
+
 	/* Operands 1 and 2 are registers. Get R1 and R2. */
 	uint32_t result = instruction.opcode << 26;
 
@@ -210,11 +194,36 @@ uint32_t assemble_itype(Instruction instruction) {
 	return result |= result2;
 }
 
+uint32_t assemble_branch(Instruction instruction) {
+	/* Operands 1 and 2 are registers. Get R1 and R2. */
+	uint32_t opcode = instruction.opcode;
+	uint32_t result = opcode << 26;
+
+	char* operand1 = instruction.operand1;
+	result |= (eval_register(operand1) << 21);
+
+	char* operand2 = instruction.operand2;
+	result |= (eval_register(operand2) << 16);
+
+	/* Operand 3 is an offset from the current address. */
+	char* operand3 = instruction.operand3;
+	uint32_t offset = eval_immediate(operand3, opcode, instruction.table);
+
+	/*
+	 * Divide offset by 4 as we're dealing with words, and subtract the 
+	 * current address. 
+	 */
+	offset /= 4;
+	offset -= *(instruction.address);
+	result |= offset;
+
+	return result;
+}
+
 uint32_t assemble_jtype(Instruction instruction) {
 	/* One operand, which is an absolute immediate address. */
 	uint32_t result = instruction.opcode << 26;
 	char* operand1 = instruction.operand1;
-	
 	
 	uint32_t result2 = eval_immediate(operand1, instruction.opcode, instruction.table);
 	printf("\tJump Location: %u\n", result2);
@@ -233,6 +242,7 @@ void assemble_skip(Instruction instruction) {
 
 	/* Reserve n words (32 bits of 0). */
 	for(int i = 0; i < num_reserve; i++) {
+		/* Cannot use ++ operator when dereferencing! */
 		*(instruction.address) += 1;
 	}	
 }
