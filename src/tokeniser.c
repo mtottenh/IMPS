@@ -29,21 +29,21 @@ Tokeniser* tokeniser_new(FILE* source) {
  * Assumes that *dest is already allocated on the heap and reallocates
  * space for the new value accordingly
  */
-int copy_token(char **dest, const void *src) {
+void copy_token(char **dest, const void *src) {
 	if (src == NULL) {
 		*dest = NULL; 
-		return 1;
-	}
+	} else {
 	/* Reallocate memory and clear out previous data. */
 	*dest = realloc(*dest, strlen(src));
 	if (*dest == NULL) {
-		perror("Couldn't reallocate memory for *dest");
-		exit(EXIT_FAILURE);
-	}		
-	memset(*dest, '\0', sizeof(*dest));
-	strncpy(*dest, src, strlen(src));
-	return EXIT_SUCCESS;	
+			perror("Couldn't reallocate memory for *dest");
+			exit(EXIT_FAILURE);
+		}		
+		memset(*dest, '\0', sizeof(*dest));
+		strncpy(*dest, src, strlen(src));
+	}
 }
+
 int get_tokenised_line(Tokeniser* tokeniser) {
 	//What should I assume about line length?
 	char buffer[100];

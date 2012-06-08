@@ -22,6 +22,7 @@ typedef struct Tokeniser {
 char* strtok_r(char*, const char*, char**);
 
 Tokeniser* tokeniser_new(FILE*);
+void copy_token(char**, const void*);
 int get_tokenised_line(Tokeniser*);
 void free_tokeniser(Tokeniser*);
 
