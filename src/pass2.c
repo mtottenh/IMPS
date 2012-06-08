@@ -14,22 +14,28 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 	setup_pointers(func_pointers);
 
 	/* Setup buffer for output. */
-	uint32_t buffer[2048];
+	uint32_t buffer[MEM_SIZE / 32];
 
 	/* Loop through the input file via the tokeniser until EOF or error occurs. */
 	Tokeniser_Line line;
 	uint32_t assembled_line;
 	uint16_t address = 0;
 	uint32_t opcode = 0;
-	Instruction* instruction_data = malloc(sizeof(Instruction));
+	Instruction instr_data;
 
 	while(get_tokenised_line(tokeniser) == 0) {
 		/* Get the tokenised line and given opcode. */
 		line = tokeniser->line;
 		opcode = Symbol_Table_get(table, line.opcode)->value;
-		instruction_data->opcode = 
-			Symbol_Table_get(table, line.opcode)->value;
-		printf("Opcode: %u\t", opcode);
+			printf("Opcode: %u\t", opcode);
+
+		/* Set up instruction struct for this line. */
+		instr_data.opcode = Symbol_Table_get(table, line.opcode)->value;
+		instr_data.operand1 = line.operand1;
+		instr_data.operand2 = line.operand2;
+		instr_data.operand3 = line.operand3;
+		instr_data.table = table;
+		instr_data.address = &address;
 
 		/* Special case! Opcode 20 = skip. */
 		switch(opcode) {
@@ -73,7 +79,7 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 		 		 * current address of the buffer.
 				 */
 				assembled_line = 
-					func_pointers[opcode](opcode, line, table);
+					func_pointers[opcode](instr_data);
 				buffer[address] = assembled_line;
 				address++;
 				printf("\nAssembled line: %x\n", assembled_line);
@@ -88,9 +94,8 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 	/* Write buffer to output file. */
 	fwrite(buffer, sizeof(uint32_t), address, output);
 
-	/* Free memory for tokeniser and instructions struct. */
+	/* Free memory of the tokeniser. */
 	free_tokeniser(tokeniser);
-	free(instruction_data);
 }
 
 void setup_pointers(FunctionPointer array[]) {
@@ -161,30 +166,28 @@ uint32_t eval_register(char* regstring) {
  	return (uint32_t) atoi(regstring);
 }
 
-uint32_t assemble_halt(uint32_t opcode, Tokeniser_Line line, 
-	Symbol_Table* table) {
+uint32_t assemble_halt(Instruction instruction) {
 	/* Halt instruction is simply 32 zero bits. Return 0. */
 	return 0;
 }
 
-uint32_t assemble_rtype(uint32_t opcode, Tokeniser_Line line,
-	 Symbol_Table* table) {
+uint32_t assemble_rtype(Instruction instruction) {
 	/* All operands are registers. Get R1, R2, R3... */
-	uint32_t result = opcode << 26;
+	uint32_t result = instruction.opcode << 26;
 
 
-	printf("OP1: %s, OP2: %s, OP3: %s", line.operand1, line.operand2, line.operand3);
-	char* operand1 = line.operand1;
+	printf("OP1: %s, OP2: %s, OP3: %s", instruction.operand1, instruction.operand2, instruction.operand3);
+	char* operand1 = instruction.operand1;
 	if (operand1 != NULL) {
 		result |= (eval_register(operand1) << 21);
 	}
 
-	char* operand2 = line.operand2;
+	char* operand2 = instruction.operand2;
 	if (operand2 != NULL) {
 		result |= (eval_register(operand2) << 16);
 	}
 
-	char* operand3 = line.operand3;
+	char* operand3 = instruction.operand3;
 	if (operand3 != NULL) {
 		result |= (eval_register(operand3) << 11);
 	}
@@ -192,43 +195,43 @@ uint32_t assemble_rtype(uint32_t opcode, Tokeniser_Line line,
 	return result;
 }
 
-uint32_t assemble_itype(uint32_t opcode, Tokeniser_Line line,
-	 Symbol_Table* table) {
+uint32_t assemble_itype(Instruction instruction) {
 	/* Operands 1 and 2 are registers. Get R1 and R2. */
-	uint32_t result = opcode << 26;
+	uint32_t result = instruction.opcode << 26;
 
-	char* operand1 = line.operand1;
+	char* operand1 = instruction.operand1;
 	result |= (eval_register(operand1) << 21);
 
-	char* operand2 = line.operand2;
+	char* operand2 = instruction.operand2;
 	result |= (eval_register(operand2) << 16);
 
 	/* Operand 3 is an immediate value. */
-	char* operand3 = line.operand3;
+	char* operand3 = instruction.operand3;
 
-	printf("\nOP1: %s\tOP2: %s\tOP3: %s\n", line.operand1,line.operand2,line.operand3);
-	uint32_t result2 = eval_immediate(operand3, opcode, table);
+	printf("\nOP1: %s\tOP2: %s\tOP3: %s\n", instruction.operand1,instruction.operand2,instruction.operand3);
+	uint32_t result2 = eval_immediate(operand3, instruction.opcode, instruction.table);
 	printf("Immediate value for I type: %u", result2);
 	return result |= result2;
 }
 
-uint32_t assemble_jtype(uint32_t opcode, Tokeniser_Line line,
-	 Symbol_Table* table) {
+uint32_t assemble_jtype(Instruction instruction) {
 	/* One operand, which is an absolute immediate address. */
-	uint32_t result = opcode << 26;
-	char* operand1 = line.operand1;
+	uint32_t result = instruction.opcode << 26;
+	char* operand1 = instruction.operand1;
 	
 	
-	uint32_t result2 = eval_immediate(operand1, opcode, table);
+	uint32_t result2 = eval_immediate(operand1, instruction.opcode, instruction.table);
 	printf("\tJump Location: %u\n", result2);
 	return result |= result2;
 }
 
-uint32_t assemble_fill(uint32_t opcode, Tokeniser_Line line, 
-	Symbol_Table* table) {
+uint32_t assemble_fill(Instruction instruction) {
 	/* Get operand 1, convert to an integer and return. */
-	char* operand1 = line.operand1;
+	char* operand1 = instruction.operand1;
 
 	return (uint32_t) atoi(operand1);
 }
 
+uint32_t assemble_skip(Instruction instruction) {
+	return 0;
+}
