@@ -5,9 +5,31 @@
 /* THINGS TO CONSIDER:
  * 1. Hashtable implementation of symbol table
  * 2. Binary tree implementation?
- * 3. doubble check behaviour of Symbol_Table_free()
+ * 3. doubble check behaviour of symbol_table_free()
  */
-
+enum opcodes {
+	HALT,
+	ADD,
+	ADDI,
+	SUB,
+	SUBI,
+	MUL,
+	MULI,
+	LW,
+	SW,
+	BEQ,
+	BNE,
+	BLT,
+	BGT,
+	BLE,
+	BGE,
+	JMP,
+	JR,
+	JAL,
+	OUT,
+	FILL,
+	SKIP
+};
 /* Types for symbol table*/
 
 typedef char* Key;
@@ -28,42 +50,42 @@ typedef struct {
  * containing opcode and directive mappings
  * returns a pointer to the table
  */
-Symbol_Table* Symbol_Table_new(void);
+Symbol_Table* symbol_table_new(void);
 
 /* Deletes a symbol table */
-void Symbol_Table_free(Symbol_Table**);
+void symbol_table_free(Symbol_Table**);
 
 /* 
  * Returns the number of (key,value) pairs 
  * in the Symbol_Table pointed to by Symbol_Table* 
  */
-size_t Symbol_Table_getLength(Symbol_Table*);
-Symbol_Table_Entry* Symbol_Table_getPrev(Symbol_Table*, Key);
+size_t symbol_table_getLength(Symbol_Table*);
+Symbol_Table_Entry* symbol_table_getPrev(Symbol_Table*, Key);
 /* Adds the (key,value) pair to the symbol table poitned to by Symbol_Table* */
-int Symbol_Table_put(Symbol_Table*,Key,Value);
+int symbol_table_put(Symbol_Table*,Key,Value);
 
 /* 
  * Removes all (key,_) pairs from the symbol table 
  * pointed to by Symbol_Table* 
  */
-int Symbol_Table_remove(Symbol_Table*,Key);
+int symbol_table_remove(Symbol_Table*,Key);
 
 /*
  * Checks to see if a (key,_) pair is in the symbol table 
  * pointed to by Symbol_Table*, returns 0 on key contained
  * and 1 on key not found
  */
-int Symbol_Table_contains(Symbol_Table*,Key);
+int symbol_table_contains(Symbol_Table*,Key);
 
 /*
  * Returns  a pointer to the first (key,value) pair
  * in the symbol table pointed to by Symbol_Table* 
  */
-Symbol_Table_Entry* Symbol_Table_get(Symbol_Table*,Key);
+Symbol_Table_Entry* symbol_table_get(Symbol_Table*,Key);
 
-/*Symbol_Table_map();*/
+/*symbol_table_map();*/
 
 /* Prints the given symbol table to the screen */
-void Symbol_Table_print(Symbol_Table*);
+void symbol_table_print(Symbol_Table*);
 
 #endif

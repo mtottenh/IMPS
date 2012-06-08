@@ -24,11 +24,11 @@ void pass1(FILE* file, Symbol_Table* table) {
 		if (label != NULL) {
 			int last_elem = strlen(label) - 1;
 			label[last_elem] = '\0';
-			Symbol_Table_put(table, label, address);	
+			symbol_table_put(table, label, address);	
 		}
 
 		/* Check if we have .skip, which changes address offsets. */
-		if (Symbol_Table_get(table, line.opcode)->value == SKIP_OPCODE) {
+		if (symbol_table_get(table, line.opcode)->value == SKIP_OPCODE) {
 			address += atoi(line.operand1) * 4;
 		} else {
  			address += 4;

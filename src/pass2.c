@@ -26,7 +26,7 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 		line = tokeniser->line;
 
 		/* Set up instruction struct for this line. */
-		instr_data.opcode = Symbol_Table_get(table, line.opcode)->value;
+		instr_data.opcode = symbol_table_get(table, line.opcode)->value;
 		instr_data.operand1 = line.operand1;
 		instr_data.operand2 = line.operand2;
 		instr_data.operand3 = line.operand3;
@@ -88,8 +88,8 @@ uint32_t eval_immediate(char* immediate, uint32_t opcode, Symbol_Table* table) {
 	}
 
 	/* Check if a mapping exists in the symbol table. */
-	Symbol_Table_Entry* label_entry = Symbol_Table_get(table, immediate);
-
+	Symbol_Table_Entry* label_entry = symbol_table_get(table, immediate);
+	
 	if (label_entry != NULL) {
 		result = (uint32_t) label_entry->value;
 	} else {
