@@ -4,13 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 typedef struct Tokeniser_Line {
 	char* label;
 	char* opcode;
 	char* operand1;
 	char* operand2;
 	char* operand3;
-	int num_operands;
 } Tokeniser_Line;
 
 typedef struct Tokeniser {
@@ -18,7 +18,10 @@ typedef struct Tokeniser {
 	Tokeniser_Line line;
 } Tokeniser;
 
-void tokeniser_init(FILE*, Tokeniser**);
+// Definition for strtok_r, not defined in C99. See man strtok_r for details
+char* strtok_r(char*, const char*, char**);
+
+Tokeniser* tokeniser_new(FILE*);
 int get_tokenised_line(Tokeniser*);
 void free_tokeniser(Tokeniser*);
 
