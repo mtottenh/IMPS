@@ -70,42 +70,55 @@ size_t symbol_table_getLength(Symbol_Table *table) {
 int symbol_table_put(Symbol_Table* table, Key key, Value value) {
 
 	/* PRE: table is a valid symbol table ie not NULL*/
-	Symbol_Table_Entry *i = table->head;
+	Symbol_Table_Entry **i = &(table->head);
 	/* Adding to an empty table */
-	if (table->head == NULL) {
-		table->head = malloc(sizeof(Symbol_Table_Entry));
+//	if (*i == NULL) {
+/*	 **i = object
+	*i = pointer */
+//	i = &((*i)->next)	
+//	}
+/*	if ((*i) == NULL) {
+		(*i) = malloc(sizeof(Symbol_Table_Entry));
 
-		if (table->head == NULL) {
-			perror("malloc'ing table->head");
+		if ((*i) == NULL) {
+			perror("malloc'ing (*i)");
 			return 1;
 		}
 		
-		table->head->key = malloc(strlen(key));
+		(*i)->key = malloc(strlen(key));
 
-		if (table->head->key == NULL) {
-			perror("malloc'ing table->head->key");
+		if ((*i)->key == NULL) {
+			perror("malloc'ing (*i)->key");
 			return 1;
 		}
 
-		table->head->key = strncpy(table->head->key, key, strlen(key));
-		table->head->value = value;
-		table->head->next = NULL;
+		(*i)->key = strncpy(table->head->key, key, strlen(key));
+		(*i)->value = value;
+		(*i)->next = NULL;
 
+	} else {*/
+
+	if ((*i) == NULL ) {
+		(*i) = malloc(sizeof(Symbol_Table_Entry));
 	} else {
-		while(i->next != NULL) {
-			 i=i->next; 	
+		while((*i)->next != NULL) {
+			 i=&((*i)->next); 	
 		}
 		/* MID : i now points to the last entry in the table */
-		/* create a new entyr on the end of the list */
-		i->next = malloc(sizeof(Symbol_Table_Entry));
-		i = i->next;
-		/* Set it to hold (key,value) and point to NULL */
-		i->key = malloc(strlen(key));
-		strncpy(i->key,key,strlen(key));
-		i->value = value;
-		i->next = NULL;
-		/* Return 0 on no error */
-	}	
+		/* create a new entry on the end of the list */
+		(*i)->next = malloc(sizeof(Symbol_Table_Entry));
+		if ((*i)->next == NULL) {
+			perror("malloc'ing i->next");
+			return 1;
+		} 
+		i = &((*i)->next);
+	}
+	/* Set it to hold (key,value) and point to NULL */
+	(*i)->key = malloc(strlen(key));
+	strncpy((*i)->key, key, strlen(key));
+	(*i)->value = value;
+	(*i)->next = NULL;
+	/* Return 0 on no error */
 
 	return 0;
 }
@@ -133,7 +146,7 @@ static Symbol_Table_Entry* symbol_table_getprev(Symbol_Table* table, Key key) {
 int symbol_table_remove(Symbol_Table* table, Key key) {
 
 	Symbol_Table_Entry *current = symbol_table_get(table,key);
-	Symbol_Table_Entry *prev = symbol_table_getPrev(table,key);
+	Symbol_Table_Entry *prev = symbol_table_getprev(table,key);
 
 	if (prev == NULL) {
 		table->head = current->next;
@@ -174,7 +187,7 @@ Symbol_Table_Entry* symbol_table_get(Symbol_Table* table, Key key) {
 }
 
 
-void symbol_table_print(Symbol_Table* table) 
+void symbol_table_print(Symbol_Table* table) {
 	if (table == NULL) {
 		fprintf(stderr,"Erorr: Not a valid symbol table," 
 				"please call symbol_table_new()\n");

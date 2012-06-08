@@ -25,14 +25,14 @@ void pass1(FILE* file, Symbol_Table* table) {
 			int last_elem = strlen(label) - 1;
 			label[last_elem] = '\0';
 			printf("Label: %s\tAddress: %u\n", label, address);
-			Symbol_Table_put(table, label, address);	
+			symbol_table_put(table, label, address);	
 		}
 
 		/*
 		 * Check if we have .skip (opcode 20) which changes address
 		 * offsets.
 		 */
-		if (Symbol_Table_get(table, line.opcode)->value == 20) {
+		if (symbol_table_get(table, line.opcode)->value == 20) {
 			address += atoi(line.operand1)*4;
 		} else {
  			address += 4;

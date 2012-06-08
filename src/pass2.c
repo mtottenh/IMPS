@@ -3,7 +3,7 @@
 void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 	printf("****PASS 2****\n\n");
 	printf("**Symbol Table Recieved**\n");
-	Symbol_Table_print(table);
+	symbol_table_print(table);
 	printf("**End Table**\n");
 	/* Create tokeniser. */
 	Tokeniser* tokeniser;
@@ -25,7 +25,7 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 	while(get_tokenised_line(tokeniser) == 0) {
 		/* Get the tokenised line and given opcode. */
 		line = tokeniser->line;
-		opcode = Symbol_Table_get(table,line.opcode)->value;
+		opcode = symbol_table_get(table,line.opcode)->value;
 		printf("Opcode: %u\t", opcode);
 
 		/* Special case! Opcode 20 = skip. */
@@ -126,7 +126,7 @@ uint32_t eval_immediate(char* immediate, uint32_t opcode, Symbol_Table* table) {
 
 	/* Check if a mapping exists in the symbol table. */
 	/*Again this needs to change as get returns a pointer to a (key,value) pair not an int*/
-	Symbol_Table_Entry* label_entry = Symbol_Table_get(table, immediate);
+	Symbol_Table_Entry* label_entry = symbol_table_get(table, immediate);
 	printf("Label:%s\t", immediate);
 	if (label_entry != NULL) {
 		result = (uint32_t) label_entry->value;
