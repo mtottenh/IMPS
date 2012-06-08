@@ -2,5 +2,7 @@
 *.log
 *.pdf
 *.o
+test*
+cake.bin
 assemble
 emulate
