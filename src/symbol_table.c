@@ -37,7 +37,7 @@ Symbol_Table* symbol_table_new(void) {
  * the symbol table and droping the last element
  * until no elements are left
  */
-void symbol_table_free_aux(Symbol_Table_Entry *s) {
+static void symbol_table_free_aux(Symbol_Table_Entry *s) {
 	if(s != NULL) {
 		symbol_table_free_aux(s->next);
 		free(s->key);
@@ -66,55 +66,38 @@ size_t symbol_table_getLength(Symbol_Table *table) {
 	return counter;
 }
 
-/* **TODO** Add error trapping code*/
 int symbol_table_put(Symbol_Table* table, Key key, Value value) {
-
-	/* PRE: table is a valid symbol table ie not NULL*/
+/* PRE: table is a valid symbol table ie not NULL*/
+/* POST: Returns 0 on successfull addition of elem to table and 1 on error */
 	Symbol_Table_Entry **i = &(table->head);
 	/* Adding to an empty table */
-//	if (*i == NULL) {
-/*	 **i = object
-	*i = pointer */
-//	i = &((*i)->next)	
-//	}
-/*	if ((*i) == NULL) {
-		(*i) = malloc(sizeof(Symbol_Table_Entry));
-
-		if ((*i) == NULL) {
-			perror("malloc'ing (*i)");
-			return 1;
-		}
-		
-		(*i)->key = malloc(strlen(key));
-
-		if ((*i)->key == NULL) {
-			perror("malloc'ing (*i)->key");
-			return 1;
-		}
-
-		(*i)->key = strncpy(table->head->key, key, strlen(key));
-		(*i)->value = value;
-		(*i)->next = NULL;
-
-	} else {*/
-
 	if ((*i) == NULL ) {
 		(*i) = malloc(sizeof(Symbol_Table_Entry));
+		if ((*i) == NULL) {
+			perror("Error malloc'ing in emptry table");
+			return 1;
+		}
 	} else {
 		while((*i)->next != NULL) {
 			 i=&((*i)->next); 	
 		}
-		/* MID : i now points to the last entry in the table */
+		/* MID1 : i now points to the last entry in the table*/
 		/* create a new entry on the end of the list */
 		(*i)->next = malloc(sizeof(Symbol_Table_Entry));
 		if ((*i)->next == NULL) {
-			perror("malloc'ing i->next");
+			perror("malloc'ing space for i->next");
 			return 1;
 		} 
 		i = &((*i)->next);
 	}
-	/* Set it to hold (key,value) and point to NULL */
+	/* MID2 : i now points to a new entry at the  end of table */
+	/* Set it to hold (key,value) and point to NULL as the next elem */
 	(*i)->key = malloc(strlen(key));
+	if ((*i)->key == NULL) {
+		perror("malloc'ing space for key");
+		return 1;
+	}
+
 	strncpy((*i)->key, key, strlen(key));
 	(*i)->value = value;
 	(*i)->next = NULL;
@@ -164,7 +147,7 @@ int symbol_table_contains(Symbol_Table* table, Key key) {
 
 	Symbol_Table_Entry *s = table->head;
 
-	while ((strcmp(s->key,key) != 0) && s != NULL) {
+	while ((strcmp(s->key, key) != 0) && s != NULL) {
 		s = s->next;
 	}
 
@@ -172,7 +155,7 @@ int symbol_table_contains(Symbol_Table* table, Key key) {
 }
 
 /*
- * Returns a the given (key,value) pair corresponding to the given key 
+ * Returns the first (key,value) pair corresponding to the given key 
  * Note that if key is not in the table, s will become equal to NULL
  * the last entry in the list. 
  */
@@ -180,7 +163,7 @@ Symbol_Table_Entry* symbol_table_get(Symbol_Table* table, Key key) {
 
 	Symbol_Table_Entry *s = table->head;
 	
-	while((s != NULL) && (strcmp(s->key,key) !=0)) {
+	while((s != NULL) && (strcmp(s->key, key) !=0)) {
 		s = s->next;
 	}
 	return s;
