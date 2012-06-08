@@ -10,6 +10,7 @@
 #define MEM_SIZE 65536
 #define START_BRANCH 9 
 #define END_BRANCH 14
+#define SKIP_OPCODE 20
 
 typedef struct Instruction {
 	uint32_t opcode;
@@ -33,6 +34,6 @@ uint32_t assemble_itype(Instruction);
 uint32_t assemble_branch(Instruction);
 uint32_t assemble_jtype(Instruction);
 uint32_t assemble_fill(Instruction);
-void assemble_skip(Instruction);
+uint32_t assemble_skip(Instruction);
 
 #endif

@@ -25,44 +25,29 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 	/* Loop through the input file via the tokeniser until EOF or error occurs. */
 	Tokeniser_Line line;
 	uint32_t assembled_line;
-	uint32_t opcode = 0;
+	uint32_t opcode;
 
 	while(get_tokenised_line(tokeniser) == 0) {
-		/* Get the tokenised line and given opcode. */
+		/* Get the tokenised line and current opcode. */
 		line = tokeniser->line;
 		opcode = Symbol_Table_get(table, line.opcode)->value;
-			printf("Opcode: %u\t", opcode);
 
 		/* Set up instruction struct for this line. */
-		instr_data.opcode = Symbol_Table_get(table, line.opcode)->value;
+		instr_data.opcode = opcode;
 		instr_data.operand1 = line.operand1;
 		instr_data.operand2 = line.operand2;
 		instr_data.operand3 = line.operand3;
 
-		/* Special case! Opcode 20 = skip. */
-		switch(opcode) {
-			case 20:
-			{
-				assemble_skip(instr_data);
-			}
-			break;
-		default: 
-			{
-				/*
-			 	 * Get the assembled line and add it to the line at the 
-		 		 * current address of the buffer.
-				 */
-				assembled_line = 
-					func_pointers[opcode](instr_data);
-				buffer[address] = assembled_line;
-				address++;
-				printf("\nAssembled line: %x\n", assembled_line);
-			}
-			break;
+		/*
+		 * Create an assembled line. If the instruction isn't a .skip
+		 * directive, then add it to the buffer at the current address
+		 * and increment it.
+		 */
+		assembled_line = func_pointers[opcode](instr_data);
+		if (!(opcode == SKIP_OPCODE)) {
+			buffer[address] = assembled_line;
+			address++;
 		}
-		printf(	"***NEXT INSTRUCTION***\n");
-
-
 	}
 
 	/* Write buffer to output file. */
@@ -98,6 +83,7 @@ void setup_pointers(FunctionPointer array[]) {
 	array[17] = &assemble_jtype; /* jal */
 	array[18] = &assemble_rtype; /* out */
 	array[19] = &assemble_fill; /* .fill directive */
+	array[20] = &assemble_skip; /* .skip directive */
 }
 
 uint32_t eval_immediate(char* immediate, uint32_t opcode, Symbol_Table* table) {
@@ -237,12 +223,14 @@ uint32_t assemble_fill(Instruction instruction) {
 	return (uint32_t) atoi(operand1);
 }
 
-void assemble_skip(Instruction instruction) {
+uint32_t assemble_skip(Instruction instruction) {
 	int num_reserve = atoi(instruction.operand1);
 
 	/* Reserve n words (32 bits of 0). */
 	for(int i = 0; i < num_reserve; i++) {
 		/* Cannot use ++ operator when dereferencing! */
 		*(instruction.address) += 1;
-	}	
+	}
+
+	return 0;
 }
