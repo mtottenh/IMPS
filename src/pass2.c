@@ -21,15 +21,13 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 	/* Loop through the input file via the tokeniser until EOF. */
 	Tokeniser_Line line;
 	uint32_t assembled_line;
-	uint32_t opcode;
 
 	while(get_tokenised_line(tokeniser) == 0) {
-		/* Get the tokenised line and current opcode. */
+		/* Get the tokenised line. */
 		line = tokeniser->line;
-		opcode = Symbol_Table_get(table, line.opcode)->value;
 
 		/* Set up instruction struct for this line. */
-		instr_data.opcode = opcode;
+		instr_data.opcode = Symbol_Table_get(table, line.opcode)->value;
 		instr_data.operand1 = line.operand1;
 		instr_data.operand2 = line.operand2;
 		instr_data.operand3 = line.operand3;
@@ -39,8 +37,8 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 		 * directive, then add it to the buffer at the current address
 		 * and increment it.
 		 */
-		assembled_line = func_pointers[opcode](instr_data);
-		if (!(opcode == SKIP_OPCODE)) {
+		assembled_line = func_pointers[instr_data.opcode](instr_data);
+		if (!(instr_data.opcode == SKIP_OPCODE)) {
 			buffer[address] = assembled_line;
 			address++;
 		}
@@ -126,19 +124,19 @@ uint32_t assemble_rtype(Instruction instruction) {
 	int shift = INSTR_WIDTH;
 	uint32_t result = instruction.opcode << (shift -= OPCODE_WIDTH);
 
-	char* operand1 = instruction.operand1;
-	if (operand1 != NULL) {
-		result |= (eval_register(operand1) << (shift -= REG_WIDTH));
+	if (instruction.operand1 != NULL) {
+		result |= (eval_register(instruction.operand1) 
+				<< (shift -= REG_WIDTH));
 	}
 
-	char* operand2 = instruction.operand2;
-	if (operand2 != NULL) {
-		result |= (eval_register(operand2) << (shift -= REG_WIDTH));
+	if (instruction.operand2 != NULL) {
+		result |= (eval_register(instruction.operand2) 
+				<< (shift -= REG_WIDTH));
 	}
 
-	char* operand3 = instruction.operand3;
-	if (operand3 != NULL) {
-		result |= (eval_register(operand3) << (shift -= REG_WIDTH));
+	if (instruction.operand3 != NULL) {
+		result |= (eval_register(instruction.operand3) 
+				<< (shift -= REG_WIDTH));
 	}
 
 	return result;
@@ -155,36 +153,29 @@ uint32_t assemble_itype(Instruction instruction) {
 	int shift = INSTR_WIDTH;
 	uint32_t result = instruction.opcode << (shift -= OPCODE_WIDTH);
 
-	char* operand1 = instruction.operand1;
-	result |= (eval_register(operand1) << (shift -= REG_WIDTH));
+	result |= (eval_register(instruction.operand1) << (shift -= REG_WIDTH));
 
-	char* operand2 = instruction.operand2;
-	result |= (eval_register(operand2) << (shift -= REG_WIDTH));
+	result |= (eval_register(instruction.operand2) << (shift -= REG_WIDTH));
 
 	/* Operand 3 is an immediate value. */
-	char* operand3 = instruction.operand3;
-
-	uint32_t result2 
-		= eval_immediate(operand3, instruction.opcode, instruction.table);
+	result |= eval_immediate(instruction.operand3, instruction.opcode, 
+				instruction.table);
 	
-	return result |= result2;
+	return result;
 }
 
 uint32_t assemble_branch(Instruction instruction) {
 	/* Operands 1 and 2 are registers. Get R1 and R2. */
 	int shift = INSTR_WIDTH;
-	uint32_t opcode = instruction.opcode;
-	uint32_t result = opcode << (shift -= OPCODE_WIDTH);
+	uint32_t result = instruction.opcode << (shift -= OPCODE_WIDTH);
 
-	char* operand1 = instruction.operand1;
-	result |= (eval_register(operand1) << (shift -= REG_WIDTH));
+	result |= (eval_register(instruction.operand1) << (shift -= REG_WIDTH));
 
-	char* operand2 = instruction.operand2;
-	result |= (eval_register(operand2) << (shift -= REG_WIDTH));
+	result |= (eval_register(instruction.operand2) << (shift -= REG_WIDTH));
 
 	/* Operand 3 is an offset from the current address. */
-	char* operand3 = instruction.operand3;
-	uint32_t offset = eval_immediate(operand3, opcode, instruction.table);
+	uint32_t offset = eval_immediate(instruction.operand3, 
+				instruction.opcode, instruction.table);
 
 	/*
 	 * Convert offset into words as we're dealing with words, and subtract 
@@ -200,19 +191,16 @@ uint32_t assemble_branch(Instruction instruction) {
 uint32_t assemble_jtype(Instruction instruction) {
 	/* One operand, which is an absolute immediate address. */
 	uint32_t result = instruction.opcode << (INSTR_WIDTH - OPCODE_WIDTH);
-	char* operand1 = instruction.operand1;
 	
-	uint32_t result2 = 
-		eval_immediate(operand1, instruction.opcode, instruction.table);
+	result |= eval_immediate(instruction.operand1, 
+				instruction.opcode, instruction.table);
 	
-	return result |= result2;
+	return result;
 }
 
 uint32_t assemble_fill(Instruction instruction) {
 	/* Get operand 1, convert to an integer and return. */
-	char* operand1 = instruction.operand1;
-
-	return (uint32_t) atoi(operand1);
+	return (uint32_t) atoi(instruction.operand1);
 }
 
 uint32_t assemble_skip(Instruction instruction) {
