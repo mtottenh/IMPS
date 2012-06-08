@@ -1,10 +1,6 @@
 #include "pass2.h"
 
 void pass2(FILE* input, FILE* output, Symbol_Table* table) {
-	printf("****PASS 2****\n\n");
-	printf("**Symbol Table Recieved**\n");
-	Symbol_Table_print(table);
-	printf("**End Table**\n");
 	/* Create tokeniser. */
 	Tokeniser* tokeniser;
 	tokeniser_init(input, &tokeniser);
@@ -14,7 +10,7 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 	setup_pointers(func_pointers);
 
 	/* Set up buffer and address for output. */
-	uint32_t buffer[MEM_SIZE / 32];
+	uint32_t buffer[MEM_SIZE / INSTR_WIDTH];
 	uint16_t address = 0;
 
 	/* Set up instruction data struct. */
@@ -22,7 +18,7 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 	instr_data.table = table;
 	instr_data.address = &address;
 
-	/* Loop through the input file via the tokeniser until EOF or error occurs. */
+	/* Loop through the input file via the tokeniser until EOF. */
 	Tokeniser_Line line;
 	uint32_t assembled_line;
 	uint32_t opcode;
@@ -88,41 +84,35 @@ void setup_pointers(FunctionPointer array[]) {
 
 uint32_t eval_immediate(char* immediate, uint32_t opcode, Symbol_Table* table) {
 	/* An immediate value can be a label reference or hex/decimal value. */
-	
 	uint32_t result = 0;
 
 	if (immediate == NULL) {
-		printf("\n******NULL PASSED TO EVAL IMMEDIATE RETURNING 0*****\n");
 		return result;
 	}
 
 	/* Check if a mapping exists in the symbol table. */
-	/*Again this needs to change as get returns a pointer to a (key,value) pair not an int*/
 	Symbol_Table_Entry* label_entry = Symbol_Table_get(table, immediate);
-	printf("Label:%s\t", immediate);
+
 	if (label_entry != NULL) {
 		result = (uint32_t) label_entry->value;
-		printf("Label's Value in Table: %u\n", result);
 	} else {
 		/*
 		 * If the value is hex, strtol() with base 0 will detect it as
 		 * hex (due to prefix 0x), otherwise base 10.
 		 */
-		int32_t value = (int32_t) strtol(immediate, NULL, 0);
-		result = (uint32_t) value;
-
+		result = (uint32_t) strtol(immediate, NULL, 0);
 	}
 	
-	
-	result &= 0x0000FFFF; 
-	//printf("Immediate Value: %u", result);
+	/* Perform bitwise AND on the result to extract the last 16 bits. */	
+	result &= 0xFFFF; 
+
 	return result;
 }
 
 uint32_t eval_register(char* regstring) {
 	/* Increment pointer to remove $ character. */
 	regstring++;
-	printf("Reg string: %s\t", regstring);
+
  	return (uint32_t) atoi(regstring);
 }
 
@@ -133,73 +123,74 @@ uint32_t assemble_halt(Instruction instruction) {
 
 uint32_t assemble_rtype(Instruction instruction) {
 	/* All operands are registers. Get R1, R2, R3... */
-	uint32_t result = instruction.opcode << 26;
+	int shift = INSTR_WIDTH;
+	uint32_t result = instruction.opcode << (shift -= OPCODE_WIDTH);
 
-
-	printf("OP1: %s, OP2: %s, OP3: %s", instruction.operand1, instruction.operand2, instruction.operand3);
 	char* operand1 = instruction.operand1;
 	if (operand1 != NULL) {
-		result |= (eval_register(operand1) << 21);
+		result |= (eval_register(operand1) << (shift -= REG_WIDTH));
 	}
 
 	char* operand2 = instruction.operand2;
 	if (operand2 != NULL) {
-		result |= (eval_register(operand2) << 16);
+		result |= (eval_register(operand2) << (shift -= REG_WIDTH));
 	}
 
 	char* operand3 = instruction.operand3;
 	if (operand3 != NULL) {
-		result |= (eval_register(operand3) << 11);
+		result |= (eval_register(operand3) << (shift -= REG_WIDTH));
 	}
 
 	return result;
 }
 
 uint32_t assemble_itype(Instruction instruction) {
-	/* Is it a branch instruction? */
+	/* Is it a branch instruction? If so, delegate to assemble_branch. */
 	if (instruction.opcode >= START_BRANCH 
 		&& instruction.opcode <= END_BRANCH) {
 		return assemble_branch(instruction);
 	}
 
 	/* Operands 1 and 2 are registers. Get R1 and R2. */
-	uint32_t result = instruction.opcode << 26;
+	int shift = INSTR_WIDTH;
+	uint32_t result = instruction.opcode << (shift -= OPCODE_WIDTH);
 
 	char* operand1 = instruction.operand1;
-	result |= (eval_register(operand1) << 21);
+	result |= (eval_register(operand1) << (shift -= REG_WIDTH));
 
 	char* operand2 = instruction.operand2;
-	result |= (eval_register(operand2) << 16);
+	result |= (eval_register(operand2) << (shift -= REG_WIDTH));
 
 	/* Operand 3 is an immediate value. */
 	char* operand3 = instruction.operand3;
 
-	printf("\nOP1: %s\tOP2: %s\tOP3: %s\n", instruction.operand1,instruction.operand2,instruction.operand3);
-	uint32_t result2 = eval_immediate(operand3, instruction.opcode, instruction.table);
-	printf("Immediate value for I type: %u", result2);
+	uint32_t result2 
+		= eval_immediate(operand3, instruction.opcode, instruction.table);
+	
 	return result |= result2;
 }
 
 uint32_t assemble_branch(Instruction instruction) {
 	/* Operands 1 and 2 are registers. Get R1 and R2. */
+	int shift = INSTR_WIDTH;
 	uint32_t opcode = instruction.opcode;
-	uint32_t result = opcode << 26;
+	uint32_t result = opcode << (shift -= OPCODE_WIDTH);
 
 	char* operand1 = instruction.operand1;
-	result |= (eval_register(operand1) << 21);
+	result |= (eval_register(operand1) << (shift -= REG_WIDTH));
 
 	char* operand2 = instruction.operand2;
-	result |= (eval_register(operand2) << 16);
+	result |= (eval_register(operand2) << (shift -= REG_WIDTH));
 
 	/* Operand 3 is an offset from the current address. */
 	char* operand3 = instruction.operand3;
 	uint32_t offset = eval_immediate(operand3, opcode, instruction.table);
 
 	/*
-	 * Divide offset by 4 as we're dealing with words, and subtract the 
-	 * current address. 
+	 * Convert offset into words as we're dealing with words, and subtract 
+	 * the current address. 
 	 */
-	offset /= 4;
+	offset /= INSTR_WIDTH / 8;
 	offset -= *(instruction.address);
 	result |= offset;
 
@@ -208,11 +199,12 @@ uint32_t assemble_branch(Instruction instruction) {
 
 uint32_t assemble_jtype(Instruction instruction) {
 	/* One operand, which is an absolute immediate address. */
-	uint32_t result = instruction.opcode << 26;
+	uint32_t result = instruction.opcode << (INSTR_WIDTH - OPCODE_WIDTH);
 	char* operand1 = instruction.operand1;
 	
-	uint32_t result2 = eval_immediate(operand1, instruction.opcode, instruction.table);
-	printf("\tJump Location: %u\n", result2);
+	uint32_t result2 = 
+		eval_immediate(operand1, instruction.opcode, instruction.table);
+	
 	return result |= result2;
 }
 
@@ -226,9 +218,9 @@ uint32_t assemble_fill(Instruction instruction) {
 uint32_t assemble_skip(Instruction instruction) {
 	int num_reserve = atoi(instruction.operand1);
 
-	/* Reserve n words (32 bits of 0). */
+	/* Reserve n words by incrementing the address. */
 	for(int i = 0; i < num_reserve; i++) {
-		/* Cannot use ++ operator when dereferencing! */
+		/* Cannot use ++ operator when dereferencing a pointer! */
 		*(instruction.address) += 1;
 	}
 

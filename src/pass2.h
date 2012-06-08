@@ -11,6 +11,9 @@
 #define START_BRANCH 9 
 #define END_BRANCH 14
 #define SKIP_OPCODE 20
+#define INSTR_WIDTH 32
+#define OPCODE_WIDTH 6
+#define REG_WIDTH 5
 
 typedef struct Instruction {
 	uint32_t opcode;
