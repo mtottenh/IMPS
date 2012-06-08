@@ -13,15 +13,19 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 	FunctionPointer func_pointers[21] = {NULL};
 	setup_pointers(func_pointers);
 
-	/* Setup buffer for output. */
+	/* Set up buffer and address for output. */
 	uint32_t buffer[MEM_SIZE / 32];
+	uint16_t address = 0;
+
+	/* Set up instruction data struct. */
+	Instruction instr_data;
+	instr_data.table = table;
+	instr_data.address = &address;
 
 	/* Loop through the input file via the tokeniser until EOF or error occurs. */
 	Tokeniser_Line line;
 	uint32_t assembled_line;
-	uint16_t address = 0;
 	uint32_t opcode = 0;
-	Instruction instr_data;
 
 	while(get_tokenised_line(tokeniser) == 0) {
 		/* Get the tokenised line and given opcode. */
@@ -34,20 +38,12 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 		instr_data.operand1 = line.operand1;
 		instr_data.operand2 = line.operand2;
 		instr_data.operand3 = line.operand3;
-		instr_data.table = table;
-		instr_data.address = &address;
 
 		/* Special case! Opcode 20 = skip. */
 		switch(opcode) {
 			case 20:
 			{
-				 char* operand1 = line.operand1;
-				
-				/* Reserve n words (32 bits of 0). */
-				for(int i = 0; i < atoi(operand1); i++) {
-					//buffer[address] = 0;
-					address++;
-				}			
+				assemble_skip(instr_data);
 			}
 			break;
 			case 9:
@@ -162,7 +158,7 @@ uint32_t eval_immediate(char* immediate, uint32_t opcode, Symbol_Table* table) {
 uint32_t eval_register(char* regstring) {
 	/* Increment pointer to remove $ character. */
 	regstring++;
-	//printf("Reg string: %s\t", regstring);
+	printf("Reg string: %s\t", regstring);
  	return (uint32_t) atoi(regstring);
 }
 
@@ -232,6 +228,11 @@ uint32_t assemble_fill(Instruction instruction) {
 	return (uint32_t) atoi(operand1);
 }
 
-uint32_t assemble_skip(Instruction instruction) {
-	return 0;
+void assemble_skip(Instruction instruction) {
+	int num_reserve = atoi(instruction.operand1);
+
+	/* Reserve n words (32 bits of 0). */
+	for(int i = 0; i < num_reserve; i++) {
+		*(instruction.address) += 1;
+	}	
 }

@@ -30,6 +30,6 @@ uint32_t assemble_rtype(Instruction);
 uint32_t assemble_itype(Instruction);
 uint32_t assemble_jtype(Instruction);
 uint32_t assemble_fill(Instruction);
-uint32_t assemble_skip(Instruction);
+void assemble_skip(Instruction);
 
 #endif
