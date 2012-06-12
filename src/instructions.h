@@ -9,6 +9,9 @@
 /* Structure for the emulators state. */
 typedef struct State {
         uint16_t pc;
+	uint16_t sp;
+	uint16_t stack_size;
+	uint16_t stack_boundary;
         uint8_t mem[MEM_SIZE];
         uint32_t reg[NUM_REGS];
 } State;
@@ -18,6 +21,9 @@ typedef void (*FunctionPointer)(uint32_t, State*);
 
 /* Increment PC function. */
 void increment_pc(State*, int16_t);
+/* Misc stack functions */
+/* Attempts to resize the stack to that specified by uint16_t */
+void stack_resize(State*, uint16_t);
 
 /* Functions corresponding to the IMPS opcode functions. */
 void halt_instruction(uint32_t, State*);
@@ -38,6 +44,10 @@ void bge_instruction(uint32_t, State*);
 void jmp_instruction(uint32_t, State*);
 void jr_instruction(uint32_t, State*);
 void jal_instruction(uint32_t, State*);
-void out_instruction(uint32_t, State*); 
-
+void out_instruction(uint32_t, State*);
+/*S-Type Instructions */ 
+void push_instruction(uint32_t, State*);
+void pop_instruction(uint32_t, State*);
+void call_instruction(uint32_t, State*);
+void ret_instruction(uint32_t, State*);
 #endif

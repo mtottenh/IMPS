@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
 
 	/* Initialise our state and setup opcode function pointers. */
 	init(current);
-	FunctionPointer func_pointers[19] = {NULL};
+	FunctionPointer func_pointers[25] = {NULL};
 	setup_pointers(func_pointers);
 
 	FILE *binary_file;
@@ -60,7 +60,14 @@ int main(int argc, char **argv) {
 int init(State *machine_state) {
 	/* Sets PC to first memory location.*/
 	machine_state->pc = 0;
-
+	/*
+         * Initialise the stack pointer to 4 bytes from the top of memory 
+	 * NB: MEM_SIZE is top of memory + 1 due to 0 based arrays
+         */
+	machine_state->sp = MEM_SIZE - 5;
+	/* set defualt stack size to 1024 bytes */
+	machine_state->stack_size = 1024;
+	machine_state->stack_boundary = machine_state->sp - machine_state->stack_size;
 	/* Initialise memory to 0. */
 	memset(machine_state->mem, 0, sizeof(uint8_t) * MEM_SIZE);
 	memset(machine_state->reg, 0, sizeof(uint32_t) * NUM_REGS);
@@ -92,5 +99,14 @@ void setup_pointers(FunctionPointer array[]) {
 	array[16] = &jr_instruction;
 	array[17] = &jal_instruction;
 	array[18] = &out_instruction;
+	/* opcodes 19/20 are assembler directives and are not used */
+	array[19] = NULL;
+	array[20] = NULL;
+	/* opcodes 21 -> 24 are S-Type instructions (stack related) */
+	array[21] = &push_instruction;
+	array[22] = &pop_instruction;
+	array[23] = &call_instruction;
+	array[24] = &ret_instruction;
 }
+
 
