@@ -83,7 +83,7 @@ void setup_pointers(FunctionPointer array[]) {
 	array[24] = &assemble_stype; /* ret */
 }
 
-uint32_t eval_immediate(char* immediate, uint32_t opcode, Symbol_Table* table) {
+uint32_t eval_immediate(char* immediate, Symbol_Table* table) {
 	/* An immediate value can be a label reference or hex/decimal value. */
 	uint32_t result = 0;
 
@@ -115,6 +115,19 @@ uint32_t eval_register(char* regstring) {
 	regstring++;
 
  	return (uint32_t) atoi(regstring);
+}
+
+uint32_t eval_stype(Symbol_Table* table, char* operand, uint32_t* flags) {
+	/* Does the operand start with $? (Register). */
+	if (operand[0] == '$') {
+		return eval_register(operand);
+	}
+	
+	/* Otherwise, evaluate the immediate value, and set immediate flag. */
+	else {
+		*flags |= STYPE_IMMEDIATE_FLAG;
+		return eval_immediate(operand, table);
+	}
 }
 
 uint32_t assemble_halt(Instruction instruction) {
@@ -161,8 +174,7 @@ uint32_t assemble_itype(Instruction instruction) {
 	result |= (eval_register(instruction.operand2) << (shift -= REG_WIDTH));
 
 	/* Operand 3 is an immediate value. */
-	result |= eval_immediate(instruction.operand3, instruction.opcode, 
-				instruction.table);
+	result |= eval_immediate(instruction.operand3, instruction.table);
 	
 	return result;
 }
@@ -176,9 +188,8 @@ uint32_t assemble_branch(Instruction instruction) {
 
 	result |= (eval_register(instruction.operand2) << (shift -= REG_WIDTH));
 
-	/* Operand 3 is an offset from the current address. */
-	uint32_t offset = eval_immediate(instruction.operand3, 
-				instruction.opcode, instruction.table);
+	/* Operand 3 is an offset from the currenress. */
+	uint32_t offset = eval_immediate(instruction.operand3, instruction.table);
 
 	/*
 	 * Convert offset into words as we're dealing with words, and subtract 
@@ -195,14 +206,38 @@ uint32_t assemble_jtype(Instruction instruction) {
 	/* One operand, which is an absolute immediate address. */
 	uint32_t result = instruction.opcode << (INSTR_WIDTH - OPCODE_WIDTH);
 	
-	result |= eval_immediate(instruction.operand1, 
-				instruction.opcode, instruction.table);
+	result |= eval_immediate(instruction.operand1, instruction.table);
 	
 	return result;
 }
 
 uint32_t assemble_stype(Instruction instruction) {
-	return 0;
+	int shift = INSTR_WIDTH;
+	uint32_t result = instruction.opcode << (shift -= OPCODE_WIDTH);
+
+	/* Set up flags and operand data variables. */ 
+	uint32_t flags = 0x0;
+	uint32_t operand_value = 0;
+
+	/* Is the first operand a memory access? (in the form [...]) */
+	char* operand1 = instruction.operand1;
+	if (operand1[0] == '[' && operand1[strlen(operand1) - 1] == ']') {
+		/*
+		 * Remove the [ and ] characters by incrementing the pointer
+		 * and setting the final character to the \0. Set mem flag.
+		 */
+		flags |= STYPE_MEM_FLAG;
+		operand1++;
+		operand1[strlen(operand1) - 1] = '\0';
+	}
+
+	/* Get the value of the operand. */
+	operand_value = eval_stype(instruction.table, operand1, &flags);
+
+	result |= flags << (shift -= STYPE_FLAGS_WIDTH);
+	result |= operand_value;
+
+	return result;
 }
 
 uint32_t assemble_fill(Instruction instruction) {

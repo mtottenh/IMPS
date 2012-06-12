@@ -15,6 +15,10 @@
 #define OPCODE_WIDTH 6
 #define REG_WIDTH 5
 
+#define STYPE_FLAGS_WIDTH 2
+#define STYPE_IMMEDIATE_FLAG 0x1
+#define STYPE_MEM_FLAG 0x2
+
 typedef struct Instruction {
 	uint32_t opcode;
 	char* operand1;
@@ -27,8 +31,9 @@ typedef struct Instruction {
 typedef uint32_t (*FunctionPointer)(Instruction);
 
 void pass2(FILE*, FILE*, Symbol_Table*);
-uint32_t eval_immediate(char*, uint32_t, Symbol_Table*);
+uint32_t eval_immediate(char*, Symbol_Table*);
 uint32_t eval_register(char*);
+uint32_t eval_stype(Symbol_Table*, char*, uint32_t*);
 void setup_pointers(FunctionPointer[]);
 
 uint32_t assemble_halt(Instruction);
