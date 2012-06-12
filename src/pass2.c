@@ -31,6 +31,9 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 		instr_data.operand2 = line.operand2;
 		instr_data.operand3 = line.operand3;
 
+		fprintf(stderr, "Opcode: %u\t Operand1: %s\t Operand2: %s\t Operand3: %s\t\n",
+				instr_data.opcode, instr_data.operand1, instr_data.operand2, instr_data.operand3);
+
 		/*
 		 * Create an assembled line. If the instruction isn't a .skip
 		 * directive, then add it to the buffer at the current address
@@ -118,8 +121,13 @@ uint32_t eval_register(char* regstring) {
 }
 
 uint32_t eval_stype(Symbol_Table* table, char* operand, uint32_t* flags) {
+	/* If the operand doesn't exist (null), return 0. */
+	if (operand == NULL) {
+		return 0;
+	}
+
 	/* Does the operand start with $? (Register). */
-	if (operand[0] == '$') {
+	else if (operand[0] == '$') {
 		return eval_register(operand);
 	}
 	
@@ -220,7 +228,7 @@ uint32_t assemble_stype(Instruction instruction) {
 
 	/* Is the first operand a memory access? (in the form [...]) */
 	char* operand1 = instruction.operand1;
-	if (operand1[0] == '[' && operand1[strlen(operand1) - 1] == ']') {
+	if (operand1 != NULL && operand1[0] == '[' && operand1[strlen(operand1) - 1] == ']') {
 		/*
 		 * Remove the [ and ] characters by incrementing the pointer
 		 * and setting the final character to the \0. Set mem flag.
