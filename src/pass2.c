@@ -77,6 +77,10 @@ void setup_pointers(FunctionPointer array[]) {
 	array[18] = &assemble_rtype; /* out */
 	array[19] = &assemble_fill; /* .fill directive */
 	array[20] = &assemble_skip; /* .skip directive */
+	array[21] = &assemble_stype; /* push */
+	array[22] = &assemble_stype; /* pop */
+	array[23] = &assemble_stype; /* call */
+	array[24] = &assemble_stype; /* ret */
 }
 
 uint32_t eval_immediate(char* immediate, Symbol_Table* table) {
@@ -111,6 +115,19 @@ uint32_t eval_register(char* regstring) {
 	regstring++;
 
  	return (uint32_t) atoi(regstring);
+}
+
+uint32_t eval_stype(Symbol_Table* table, char* operand, uint32_t* flags) {
+	/* Does the operand start with $? (Register). */
+	if (operand[0] == '$') {
+		return eval_register(operand);
+	}
+	
+	/* Otherwise, evaluate the immediate value, and set immediate flag. */
+	else {
+		*flags |= STYPE_IMMEDIATE_FLAG;
+		return eval_immediate(operand, table);
+	}
 }
 
 uint32_t assemble_halt(Instruction instruction) {
@@ -191,6 +208,34 @@ uint32_t assemble_jtype(Instruction instruction) {
 	
 	result |= eval_immediate(instruction.operand1, instruction.table);
 	
+	return result;
+}
+
+uint32_t assemble_stype(Instruction instruction) {
+	int shift = INSTR_WIDTH;
+	uint32_t result = instruction.opcode << (shift -= OPCODE_WIDTH);
+
+	/* Set up flags, initially 0x0. */ 
+	uint32_t flags = 0x0;
+
+	/* Is the first operand a memory access? (in the form [...]) */
+	char* operand1 = instruction.operand1;
+	if (operand1[0] == '[' && operand1[strlen(operand1) - 1] == ']') {
+		/*
+		 * Remove the [ and ] characters by incrementing the pointer
+		 * and setting the final character to the \0. Set mem flag.
+		 */
+		flags |= STYPE_MEM_FLAG;
+		operand1++;
+		operand1[strlen(operand1) - 1] = '\0';
+	}
+
+	/* Get the value of the operand. */
+	uint32_t operand_value = eval_stype(instruction.table, operand1, &flags);
+
+	result |= flags << (shift -= STYPE_FLAGS_WIDTH);
+	result |= operand_value;
+
 	return result;
 }
 
