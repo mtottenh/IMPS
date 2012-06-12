@@ -215,9 +215,8 @@ uint32_t assemble_stype(Instruction instruction) {
 	int shift = INSTR_WIDTH;
 	uint32_t result = instruction.opcode << (shift -= OPCODE_WIDTH);
 
-	/* Set up flags and operand data variables. */ 
+	/* Set up flags, initially 0x0. */ 
 	uint32_t flags = 0x0;
-	uint32_t operand_value = 0;
 
 	/* Is the first operand a memory access? (in the form [...]) */
 	char* operand1 = instruction.operand1;
@@ -232,7 +231,7 @@ uint32_t assemble_stype(Instruction instruction) {
 	}
 
 	/* Get the value of the operand. */
-	operand_value = eval_stype(instruction.table, operand1, &flags);
+	uint32_t operand_value = eval_stype(instruction.table, operand1, &flags);
 
 	result |= flags << (shift -= STYPE_FLAGS_WIDTH);
 	result |= operand_value;
