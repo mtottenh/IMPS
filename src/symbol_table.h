@@ -28,7 +28,11 @@ enum opcodes {
 	JAL,
 	OUT,
 	FILL,
-	SKIP
+	SKIP,
+	PUSH,
+	POP,
+	CALL,
+	RET
 };
 /* Types for symbol table*/
 

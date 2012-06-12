@@ -28,6 +28,10 @@ Symbol_Table* symbol_table_new(void) {
 	symbol_table_put(s, "out", OUT);
 	symbol_table_put(s, ".fill", FILL);
 	symbol_table_put(s, ".skip", SKIP);
+	symbol_table_put(s, "push", PUSH);
+	symbol_table_put(s, "pop", POP);
+	symbol_table_put(s, "call", CALL);
+	symbol_table_put(s, "ret", RET);
 	
 	return s;
 }

@@ -77,6 +77,10 @@ void setup_pointers(FunctionPointer array[]) {
 	array[18] = &assemble_rtype; /* out */
 	array[19] = &assemble_fill; /* .fill directive */
 	array[20] = &assemble_skip; /* .skip directive */
+	array[21] = &assemble_stype; /* push */
+	array[22] = &assemble_stype; /* pop */
+	array[23] = &assemble_stype; /* call */
+	array[24] = &assemble_stype; /* ret */
 }
 
 uint32_t eval_immediate(char* immediate, uint32_t opcode, Symbol_Table* table) {
@@ -195,6 +199,10 @@ uint32_t assemble_jtype(Instruction instruction) {
 				instruction.opcode, instruction.table);
 	
 	return result;
+}
+
+uint32_t assemble_stype(Instruction instruction) {
+	return 0;
 }
 
 uint32_t assemble_fill(Instruction instruction) {

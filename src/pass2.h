@@ -36,6 +36,7 @@ uint32_t assemble_rtype(Instruction);
 uint32_t assemble_itype(Instruction);
 uint32_t assemble_branch(Instruction);
 uint32_t assemble_jtype(Instruction);
+uint32_t assemble_stype(Instruction);
 uint32_t assemble_fill(Instruction);
 uint32_t assemble_skip(Instruction);
 
