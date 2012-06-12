@@ -1,8 +1,8 @@
-.fill 	space_char_char	32
-.fill 	p_char 		80
-.fill 	width		64
-.fill 	height		64
-.fill	max_colour_val 255
+space_char_char:.fill	32
+p_char:		.fill	80
+width: 		.fill	64
+height: 	.fill	64
+max_colour_val: .fill 	255
 
 start:	jal init		- Initialise PPM
 	jal pixels		- Print pixels
