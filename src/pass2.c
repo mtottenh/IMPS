@@ -79,7 +79,7 @@ void setup_pointers(FunctionPointer array[]) {
 	array[20] = &assemble_skip; /* .skip directive */
 }
 
-uint32_t eval_immediate(char* immediate, uint32_t opcode, Symbol_Table* table) {
+uint32_t eval_immediate(char* immediate, Symbol_Table* table) {
 	/* An immediate value can be a label reference or hex/decimal value. */
 	uint32_t result = 0;
 
@@ -157,8 +157,7 @@ uint32_t assemble_itype(Instruction instruction) {
 	result |= (eval_register(instruction.operand2) << (shift -= REG_WIDTH));
 
 	/* Operand 3 is an immediate value. */
-	result |= eval_immediate(instruction.operand3, instruction.opcode, 
-				instruction.table);
+	result |= eval_immediate(instruction.operand3, instruction.table);
 	
 	return result;
 }
@@ -173,8 +172,7 @@ uint32_t assemble_branch(Instruction instruction) {
 	result |= (eval_register(instruction.operand2) << (shift -= REG_WIDTH));
 
 	/* Operand 3 is an offset from the current address. */
-	uint32_t offset = eval_immediate(instruction.operand3, 
-				instruction.opcode, instruction.table);
+	uint32_t offset = eval_immediate(instruction.operand3, instruction.table);
 
 	/*
 	 * Convert offset into words as we're dealing with words, and subtract 
@@ -191,8 +189,7 @@ uint32_t assemble_jtype(Instruction instruction) {
 	/* One operand, which is an absolute immediate address. */
 	uint32_t result = instruction.opcode << (INSTR_WIDTH - OPCODE_WIDTH);
 	
-	result |= eval_immediate(instruction.operand1, 
-				instruction.opcode, instruction.table);
+	result |= eval_immediate(instruction.operand1, instruction.table);
 	
 	return result;
 }

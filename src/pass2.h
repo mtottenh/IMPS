@@ -27,7 +27,7 @@ typedef struct Instruction {
 typedef uint32_t (*FunctionPointer)(Instruction);
 
 void pass2(FILE*, FILE*, Symbol_Table*);
-uint32_t eval_immediate(char*, uint32_t, Symbol_Table*);
+uint32_t eval_immediate(char*, Symbol_Table*);
 uint32_t eval_register(char*);
 void setup_pointers(FunctionPointer[]);
 
