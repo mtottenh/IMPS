@@ -6,6 +6,8 @@ void increment_pc(State *machine_state, int16_t i) {
 	machine_state->pc = machine_state->pc + (4 * i);
 }
 
+
+
 /* Functions corresponding to the IMPS opcode functions. */
 void halt_instruction(uint32_t instruction, State *machine_state) {
         /* Print the values of PC and registers, then terminate the program. */
@@ -270,3 +272,89 @@ void out_instruction(uint32_t instruction, State *machine_state) {
 
 	increment_pc(machine_state, 1);
 } 
+/* S-Type instructions: 
+ * things to think about, if the stack grows upward and we store at word as 4
+ * bytes, when we retrive the word do we retrive the right way around?
+ */
+void push_instruction(uint32_t instruction, State *machine_state) {
+	/* Check that there is enough room on the stack to perform an operation */
+	if (machine_state->sp == machine_state->stack_boundary) {
+		fprintf(stderr,"Error: Stack full, Terminating\n");
+		halt_instruction(0,machine_state);
+		exit(EXIT_FAILURE);		
+	}
+	uint8_t flag = extract(instruction,6,7);
+	uint32_t value = extract(instruction,8,31);
+	uint32_t *result = (uint32_t *)&machine_state->mem[machine_state->sp];
+	uint32_t *pointer = NULL;
+	switch(flag) {
+
+		case 0:
+		{
+			*result = machine_state->reg[value];
+			break;
+		}
+		case 1:
+		{
+			*result = value;
+			break;
+		}
+		case 2:
+		{
+			uint16_t address = machine_state->reg[value];
+			pointer = (uint32_t *)&machine_state->mem[address];
+			
+			*result = *pointer;
+			break;
+		}
+		case 3:
+		{
+			pointer = (uint32_t *)&machine_state->mem[value];
+				
+			*result =*pointer;
+			break;
+		}
+	}
+	machine_state->sp -= 4;
+	increment_pc(machine_state,1);
+}
+
+void pop_instruction(uint32_t instruction, State *machine_state) {
+	/* check for empty stack if so throw error and halt */
+	/*
+	 * else extract last elem on stack and put it into register specified
+	 * by #vlaue
+	 */
+	uint32_t reg = extract(instruction,8,31);
+	machine_state->sp += 4;
+	uint32_t *pointer = (uint32_t *)&machine_state->mem[machine_state->sp];
+	machine_state->reg[reg] = *pointer;
+	//machine_state->sp += 4;
+	increment_pc(machine_state,1);
+}
+
+void call_instruction(uint32_t instruction, State *machine_state) {
+	increment_pc(machine_state,1);
+	/* Store jump location in value */
+	uint32_t value = (uint32_t) extract(instruction,8,31);
+	/* Point to a 32 bit word of memory starting at mem[SP] */
+	uint32_t *pointer = (uint32_t *)&machine_state->mem[machine_state->sp];
+	/* Set that 32 bit word to be PC */
+	*pointer = (uint32_t) machine_state->pc;
+	/* Decrease sp (stack grows downwards) */
+	machine_state->sp -= 4;
+	/* Jump to jump location by setting PC = value */
+	machine_state->pc = value;
+}
+void ret_instruction(uint32_t instruction, State *machine_state) {
+	/* As SP always points to the next free location
+	 * decrease it to get the last added element 
+	 */
+	machine_state->sp += 4;
+	/* Set pointer to look at the last 32 bit word added to mem[sp] */
+	uint32_t *pointer = (uint32_t *)&machine_state->mem[machine_state->sp];
+	
+	machine_state->pc = (uint16_t) *pointer;
+	
+}
+	
