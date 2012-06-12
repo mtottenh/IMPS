@@ -287,6 +287,7 @@ void push_instruction(uint32_t instruction, State *machine_state) {
 	uint32_t value = extract(instruction,8,31);
 	uint32_t *result = (uint32_t *)&machine_state->mem[machine_state->sp];
 	uint32_t *pointer = NULL;
+	fprintf(stderr,"Flag: %x\tValue:%x\n",flag,value);
 	switch(flag) {
 
 		case 0:

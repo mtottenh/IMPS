@@ -39,7 +39,9 @@ int main(int argc, char **argv) {
 	uint8_t opcode;
 	do {
 		uint32_t *instruction = (uint32_t *)&current->mem[current->pc];
+		
 		opcode = extract_opcode(*instruction);
+		fprintf(stderr,"Opcode : %d\n", opcode);
 
 		if (is_valid_opcode(opcode)) {
 			func_pointers[opcode](*instruction, current);

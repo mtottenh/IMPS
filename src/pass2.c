@@ -5,7 +5,7 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 	Tokeniser* tokeniser = tokeniser_new(input);
 
 	/* Create array of function pointers. */
-	FunctionPointer func_pointers[21] = {NULL};
+	FunctionPointer func_pointers[25] = {NULL};
 	setup_pointers(func_pointers);
 
 	/* Set up buffer and address for output. */

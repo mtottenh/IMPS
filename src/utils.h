@@ -6,7 +6,7 @@
 #define END_INSTRUCTION  31
 #define MEM_SIZE 65536
 #define NUM_REGS 32
-#define NUM_OPCODES 19
+#define NUM_OPCODES 25
 
 /* Address format constants. */
 static uint8_t const START_OPCODE = 0;
