@@ -364,4 +364,9 @@ void ret_instruction(uint32_t instruction, State *machine_state) {
 	fprintf(stderr, "PC : %u SP: %u\n", machine_state->pc, machine_state->sp);
 	
 }
-	
+void mov_instruction(uint32_t instruction, State *machine_state) {
+//	 moves 
+	OperandsI operands = extract_i(instruction);
+	machine_state->reg[operands.r1] = operands.immediate;
+	increment_pc(machine_state,1);
+}
