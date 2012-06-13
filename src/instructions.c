@@ -272,6 +272,15 @@ void out_instruction(uint32_t instruction, State *machine_state) {
 
 	increment_pc(machine_state, 1);
 } 
+
+static void stack_dump(State* machine_state) {
+	for (uint32_t i = MEM_SIZE -1; i > machine_state->sp; i-=4) {
+		uint32_t *stackelem = (uint32_t *)&machine_state->mem[i];
+		fprintf(stderr,"Stack Address [%d] : %d\t", (i - MEM_SIZE),*stackelem); 
+		if (i % 2 == 0) 
+			fprintf(stderr,"\n");
+	}
+}
 /* S-Type instructions: 
  * things to think about, if the stack grows upward and we store at word as 4
  * bytes, when we retrive the word do we retrive the right way around?
@@ -280,6 +289,7 @@ void push_instruction(uint32_t instruction, State *machine_state) {
 	/* Check that there is enough room on the stack to perform an operation */
 	if (machine_state->sp == machine_state->stack_boundary) {
 		fprintf(stderr,"Error: Stack full, Terminating\n");
+		stack_dump(machine_state);
 		halt_instruction(0,machine_state);
 		exit(EXIT_FAILURE);		
 	}
@@ -364,4 +374,14 @@ void ret_instruction(uint32_t instruction, State *machine_state) {
 	fprintf(stderr, "PC : %u SP: %u\n", machine_state->pc, machine_state->sp);
 	
 }
-	
+void mov_instruction(uint32_t instruction, State *machine_state) {
+//	 moves 
+	OperandsI operands = extract_i(instruction);
+	machine_state->reg[operands.r1] = operands.immediate;
+	increment_pc(machine_state,1);
+}
+void inc_instruction(uint32_t instruction, State *machine_state) {
+	OperandsR operands = extract_r(instruction);
+	machine_state->reg[operands.r1] += 1;
+	increment_pc(machine_state,1);
+}

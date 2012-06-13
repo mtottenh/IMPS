@@ -32,7 +32,8 @@ Symbol_Table* symbol_table_new(void) {
 	symbol_table_put(s, "pop", POP);
 	symbol_table_put(s, "call", CALL);
 	symbol_table_put(s, "ret", RET);
-	
+	symbol_table_put(s, "mov", MOV);
+	symbol_table_put(s, "inc", INC);
 	return s;
 }
 

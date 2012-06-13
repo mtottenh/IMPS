@@ -32,7 +32,9 @@ enum opcodes {
 	PUSH,
 	POP,
 	CALL,
-	RET
+	RET,
+	MOV,
+	INC	
 };
 /* Types for symbol table*/
 
