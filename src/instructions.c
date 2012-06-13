@@ -287,7 +287,7 @@ void push_instruction(uint32_t instruction, State *machine_state) {
 	uint32_t value = extract(instruction,8,31);
 	uint32_t *result = (uint32_t *)&machine_state->mem[machine_state->sp];
 	uint32_t *pointer = NULL;
-	fprintf(stderr,"Flag: %x\tValue:%x\n",flag,value);
+	fprintf(stderr,"Flag: %x\tValue:%u\n",flag,value);
 	switch(flag) {
 
 		case 0:
@@ -332,6 +332,9 @@ void pop_instruction(uint32_t instruction, State *machine_state) {
 	machine_state->reg[reg] = *pointer;
 	//machine_state->sp += 4;
 	increment_pc(machine_state,1);
+	fprintf(stderr, "Pc : %u, Value at sp : %u, sp : %u\n", machine_state->pc, *pointer,
+                                                        machine_state->sp);
+
 }
 
 void call_instruction(uint32_t instruction, State *machine_state) {
@@ -346,16 +349,19 @@ void call_instruction(uint32_t instruction, State *machine_state) {
 	machine_state->sp -= 4;
 	/* Jump to jump location by setting PC = value */
 	machine_state->pc = value;
+	fprintf(stderr, "Pc : %u, Value at sp : %u, sp : %u\n", machine_state->pc, *pointer, 
+							machine_state->sp);
 }
 void ret_instruction(uint32_t instruction, State *machine_state) {
 	/* As SP always points to the next free location
-	 * decrease it to get the last added element 
+	 * increase it to get the last added element 
 	 */
 	machine_state->sp += 4;
 	/* Set pointer to look at the last 32 bit word added to mem[sp] */
 	uint32_t *pointer = (uint32_t *)&machine_state->mem[machine_state->sp];
 	
 	machine_state->pc = (uint16_t) *pointer;
+	fprintf(stderr, "PC : %u SP: %u\n", machine_state->pc, machine_state->sp);
 	
 }
 	

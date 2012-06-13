@@ -20,7 +20,6 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 	/* Loop through the input file via the tokeniser until EOF. */
 	Tokeniser_Line line;
 	uint32_t assembled_line;
-
 	while(get_tokenised_line(tokeniser) == 0) {
 		/* Get the tokenised line. */
 		line = tokeniser->line;
@@ -31,7 +30,7 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 		instr_data.operand2 = line.operand2;
 		instr_data.operand3 = line.operand3;
 
-		fprintf(stderr, "Opcode: %u\t Operand1: %s\t Operand2: %s\t Operand3: %s\t\n",
+		fprintf(stderr, "Opcode: %u\t Operand1: %s\t Operand2: %s\t Operand3: %s\n",
 				instr_data.opcode, instr_data.operand1, instr_data.operand2, instr_data.operand3);
 
 		/*
@@ -44,6 +43,7 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 			buffer[address] = assembled_line;
 			address++;
 		}
+		fprintf(stderr, "Assembled Line : %x\n", assembled_line);
 	}
 
 	/* Write buffer to output file. */
@@ -197,14 +197,24 @@ uint32_t assemble_branch(Instruction instruction) {
 	result |= (eval_register(instruction.operand2) << (shift -= REG_WIDTH));
 
 	/* Operand 3 is an offset from the current address. */
-	uint32_t offset = eval_immediate(instruction.operand3, instruction.table);
+	int32_t offset = eval_immediate(instruction.operand3, instruction.table);
 
 	/*
 	 * Convert offset into words as we're dealing with words, and subtract 
 	 * the current address. 
 	 */
+	
+	fprintf(stderr, "Offset: %d, Address: %x\t", offset, *(instruction.address));
 	offset /= INSTR_WIDTH / 8;
 	offset -= *(instruction.address);
+	fprintf(stderr, "After Offset: %d, Address: %x\t", offset, *(instruction.address));
+/*
+	if( offset < 0 ) {
+		offset = offset * (-1);
+		offset |= 0x
+	}*/
+	fprintf(stderr,"Instruction Before |= : %x\n", result);
+	offset &= 0xffff;
 	result |= offset;
 
 	return result;
