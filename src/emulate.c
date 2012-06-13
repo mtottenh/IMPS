@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
 
 	/* Initialise our state and setup opcode function pointers. */
 	init(current);
-	FunctionPointer func_pointers[26] = {NULL};
+	FunctionPointer func_pointers[27] = {NULL};
 	setup_pointers(func_pointers);
 
 	FILE *binary_file;
@@ -112,6 +112,7 @@ void setup_pointers(FunctionPointer array[]) {
 	array[23] = &call_instruction;
 	array[24] = &ret_instruction;
 	array[25] = &mov_instruction;
+	array[26] = &inc_instruction;
 }
 
 

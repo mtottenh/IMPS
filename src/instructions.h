@@ -51,5 +51,7 @@ void pop_instruction(uint32_t, State*);
 void call_instruction(uint32_t, State*);
 void ret_instruction(uint32_t, State*);
 void mov_instruction(uint32_t, State*);
+void inc_instruction(uint32_t, State*);
+
 
 #endif
