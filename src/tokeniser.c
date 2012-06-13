@@ -39,7 +39,7 @@ void copy_token(char **dest, const void *src) {
 			perror("Couldn't reallocate memory for *dest");
 			exit(EXIT_FAILURE);
 		}		
-		memset(*dest, '\0', sizeof(src));
+		memset(*dest, '\0',strlen(*dest));
 		strncpy(*dest, src, strlen(src));
 	}
 }

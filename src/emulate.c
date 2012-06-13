@@ -37,6 +37,8 @@ int main(int argc, char **argv) {
 
 	/* Begin decode execute loop */
 	uint8_t opcode;
+	fprintf(stderr,"***Machine's Intial State***\n");
+	fprintf(stderr,"PC: %d\t SP: %d\t, StackSize: %d\n", current->pc,current->sp, current->stack_size);
 	do {
 		uint32_t *instruction = (uint32_t *)&current->mem[current->pc];
 		

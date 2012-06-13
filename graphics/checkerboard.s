@@ -57,6 +57,7 @@ start_b:	beq $1 $2 start_l		- If R1 == R2, jump to start
 finish:	pop $4			- Restore state of R4
 	pop $3			- Restore state of R3
 	jr $31			- Return to caller
+
 print_white:	push 0		- Print 0x00 X 3
 		call print
 		push 0
@@ -64,6 +65,7 @@ print_white:	push 0		- Print 0x00 X 3
 		push 0
 		call print
 		ret
+
 print_black: 	push [maxcolour]	- Print max_colour_val X 3
 		call print
 		push [maxcolour]
@@ -71,16 +73,19 @@ print_black: 	push [maxcolour]	- Print max_colour_val X 3
 		push [maxcolour]
 		call print
 		ret
+
 print:	pop $30			- Pop addr off stack and store in R30
 	pop $29			- Pop pushed data
 	push $30		- Push data back onto stack
 	out $29			- Print out least significant byte of R30
 	ret			- Return to caller
+
 print_width: 	push 54
 		call print
 		push 52
 		call print
 		ret
+
 print_height:	call print_width
 		ret
 
@@ -91,6 +96,7 @@ print_colour:	push 50
 		push 53
 		call print
 		ret
+
 spacechar:	.fill	32
 p_char:		.fill	80
 width: 		.fill	64
