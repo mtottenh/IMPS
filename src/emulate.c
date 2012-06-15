@@ -37,13 +37,10 @@ int main(int argc, char **argv) {
 
 	/* Begin decode execute loop */
 	uint8_t opcode;
-	fprintf(stderr,"***Machine's Intial State***\n");
-	fprintf(stderr,"PC: %d\t SP: %d\t, StackSize: %d\n", current->pc,current->sp, current->stack_size);
 	do {
 		uint32_t *instruction = (uint32_t *)&current->mem[current->pc];
 		
 		opcode = extract_opcode(*instruction);
-		fprintf(stderr,"Opcode : %d\t, Instruction : %x\n", opcode, *instruction);
 
 		if (is_valid_opcode(opcode)) {
 			func_pointers[opcode](*instruction, current);
@@ -103,10 +100,10 @@ void setup_pointers(FunctionPointer array[]) {
 	array[16] = &jr_instruction;
 	array[17] = &jal_instruction;
 	array[18] = &out_instruction;
-	/* opcodes 19/20 are assembler directives and are not used */
+	/* Opcodes 19/20 are assembler directives and are not used. */
 	array[19] = NULL;
 	array[20] = NULL;
-	/* opcodes 21 -> 24 are S-Type instructions (stack related) */
+	/* Opcodes 21 -> 24 are S-Type instructions (stack related). */
 	array[21] = &push_instruction;
 	array[22] = &pop_instruction;
 	array[23] = &call_instruction;

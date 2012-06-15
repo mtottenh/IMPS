@@ -29,5 +29,8 @@ int main(int argc, char** argv) {
 	fclose(input);
 	fclose(output);
 
+	/* Free the symbol table's memory. */
+	symbol_table_free(&table);
+
 	return EXIT_SUCCESS;
 }

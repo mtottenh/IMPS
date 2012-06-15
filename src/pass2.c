@@ -30,9 +30,6 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 		instr_data.operand2 = line.operand2;
 		instr_data.operand3 = line.operand3;
 
-		fprintf(stderr, "Opcode: %u\t Operand1: %s\t Operand2: %s\t Operand3: %s\n",
-				instr_data.opcode, instr_data.operand1, instr_data.operand2, instr_data.operand3);
-
 		/*
 		 * Create an assembled line. If the instruction isn't a .skip
 		 * directive, then add it to the buffer at the current address
@@ -43,7 +40,6 @@ void pass2(FILE* input, FILE* output, Symbol_Table* table) {
 			buffer[address] = assembled_line;
 			address++;
 		}
-		fprintf(stderr, "Assembled Line : %x\n", assembled_line);
 	}
 
 	/* Write buffer to output file. */
@@ -199,24 +195,18 @@ uint32_t assemble_branch(Instruction instruction) {
 	result |= (eval_register(instruction.operand2) << (shift -= REG_WIDTH));
 
 	/* Operand 3 is an offset from the current address. */
-	int32_t offset = eval_immediate(instruction.operand3, instruction.table);
+	int32_t offset = eval_immediate(instruction.operand3, 
+					instruction.table);
 
 	/*
 	 * Convert offset into words as we're dealing with words, and subtract 
-	 * the current address. 
+	 * the current address. Bitwise AND with 0xFFFF to extract the last
+	 * 16 bits.
 	 */
-	
-	fprintf(stderr, "Offset: %d, Address: %x\t", offset, *(instruction.address));
 	offset /= INSTR_WIDTH / 8;
 	offset -= *(instruction.address);
-	fprintf(stderr, "After Offset: %d, Address: %x\t", offset, *(instruction.address));
-/*
-	if( offset < 0 ) {
-		offset = offset * (-1);
-		offset |= 0x
-	}*/
-	fprintf(stderr,"Instruction Before |= : %x\n", result);
-	offset &= 0xffff;
+	offset &= 0xFFFF;
+
 	result |= offset;
 
 	return result;
@@ -240,7 +230,8 @@ uint32_t assemble_stype(Instruction instruction) {
 
 	/* Is the first operand a memory access? (in the form [...]) */
 	char* operand1 = instruction.operand1;
-	if (operand1 != NULL && operand1[0] == '[' && operand1[strlen(operand1) - 1] == ']') {
+	if (operand1 != NULL && operand1[0] == '['
+			&& operand1[strlen(operand1) - 1] == ']') {
 		/*
 		 * Remove the [ and ] characters by incrementing the pointer
 		 * and setting the final character to the \0. Set mem flag.
@@ -251,7 +242,8 @@ uint32_t assemble_stype(Instruction instruction) {
 	}
 
 	/* Get the value of the operand. */
-	uint32_t operand_value = eval_stype(instruction.table, operand1, &flags);
+	uint32_t operand_value = eval_stype(instruction.table, operand1,
+						 &flags);
 
 	result |= flags << (shift -= STYPE_FLAGS_WIDTH);
 	result |= operand_value;

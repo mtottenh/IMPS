@@ -21,8 +21,9 @@ typedef void (*FunctionPointer)(uint32_t, State*);
 
 /* Increment PC function. */
 void increment_pc(State*, int16_t);
-/* Misc stack functions */
-/* Attempts to resize the stack to that specified by uint16_t */
+
+/* Misc stack functions. */
+/* Attempts to resize the stack to that specified by uint16_t. */
 void stack_resize(State*, uint16_t);
 
 /* Functions corresponding to the IMPS opcode functions. */
@@ -45,7 +46,9 @@ void jmp_instruction(uint32_t, State*);
 void jr_instruction(uint32_t, State*);
 void jal_instruction(uint32_t, State*);
 void out_instruction(uint32_t, State*);
-/*S-Type Instructions */ 
+
+/* S-Type instructions. */ 
+
 void push_instruction(uint32_t, State*);
 void pop_instruction(uint32_t, State*);
 void call_instruction(uint32_t, State*);

@@ -136,7 +136,8 @@ void beq_instruction(uint32_t instruction, State *machine_state) {
          * Otherwise, increment the program counter normally.
          */
         OperandsI operands = extract_i(instruction);
-        if (machine_state->reg[operands.r1] == machine_state->reg[operands.r2]) {
+        if (machine_state->reg[operands.r1] 
+			== machine_state->reg[operands.r2]) {
                 increment_pc(machine_state, operands.immediate);
 	}
         else {
@@ -151,7 +152,8 @@ void bne_instruction(uint32_t instruction, State *machine_state) {
          * Otherwise, increment the program counter normally.
   	 */
 	OperandsI operands = extract_i(instruction);
-	if (machine_state->reg[operands.r1] != machine_state->reg[operands.r2]) {
+	if (machine_state->reg[operands.r1] 
+			!= machine_state->reg[operands.r2]) {
                 increment_pc(machine_state, operands.immediate);
 	}
         else {
@@ -199,7 +201,8 @@ void ble_instruction(uint32_t instruction, State *machine_state) {
          * Otherwise, increment the program counter normally.
          */
         OperandsI operands = extract_i(instruction);
-        if (machine_state->reg[operands.r1] <= machine_state->reg[operands.r2]) {
+        if (machine_state->reg[operands.r1] 
+			<= machine_state->reg[operands.r2]) {
                 increment_pc(machine_state, operands.immediate);
 	}
         else {
@@ -215,7 +218,8 @@ void bge_instruction(uint32_t instruction, State *machine_state) {
          * Otherwise, increment the program counter normally.
          */
         OperandsI operands = extract_i(instruction);
-        if (machine_state->reg[operands.r1] >= machine_state->reg[operands.r2]) {
+        if (machine_state->reg[operands.r1] 
+			>= machine_state->reg[operands.r2]) {
                 increment_pc(machine_state, operands.immediate);
 	}
         else {
@@ -274,30 +278,30 @@ void out_instruction(uint32_t instruction, State *machine_state) {
 } 
 
 static void stack_dump(State* machine_state) {
-	for (uint32_t i = MEM_SIZE -1; i > machine_state->sp; i-=4) {
+	for (uint32_t i = MEM_SIZE - 1; i > machine_state->sp; i -= 4) {
 		uint32_t *stackelem = (uint32_t *)&machine_state->mem[i];
-		fprintf(stderr,"Stack Address [%d] : %d\t", (i - MEM_SIZE),*stackelem); 
-		if (i % 2 == 0) 
+		fprintf(stderr, "Stack Address [%d] : %d\t",
+				 (i - MEM_SIZE), *stackelem); 
+
+		if (i % 2 == 0) {
 			fprintf(stderr,"\n");
+		}
 	}
 }
-/* S-Type instructions: 
- * things to think about, if the stack grows upward and we store at word as 4
- * bytes, when we retrive the word do we retrive the right way around?
- */
+/* S-Type instructions */
 void push_instruction(uint32_t instruction, State *machine_state) {
-	/* Check that there is enough room on the stack to perform an operation */
+	/* Check that there is enough room on the stack. */
 	if (machine_state->sp == machine_state->stack_boundary) {
-		fprintf(stderr,"Error: Stack full, Terminating\n");
+		fprintf(stderr, "Error: Stack overflow. Terminating\n");
 		stack_dump(machine_state);
-		halt_instruction(0,machine_state);
+		halt_instruction(0, machine_state);
 		exit(EXIT_FAILURE);		
 	}
-	uint8_t flag = extract(instruction,6,7);
-	uint32_t value = extract(instruction,8,31);
+
+	uint8_t flag = extract(instruction, 6, 7);
+	uint32_t value = extract(instruction, 8, 31);
 	uint32_t *result = (uint32_t *)&machine_state->mem[machine_state->sp];
 	uint32_t *pointer = NULL;
-	fprintf(stderr,"Flag: %x\tValue:%u\n",flag,value);
 	switch(flag) {
 
 		case 0:
@@ -331,57 +335,71 @@ void push_instruction(uint32_t instruction, State *machine_state) {
 }
 
 void pop_instruction(uint32_t instruction, State *machine_state) {
-	/* check for empty stack if so throw error and halt */
+	/* Check for empty stack; if so throw error and halt. */
+	if (machine_state->sp == (MEM_SIZE - 1)) {
+		fprintf(stderr, "Error: Stack underflow. Terminating\n");
+		stack_dump(machine_state);
+		halt_instruction(0, machine_state);
+		exit(EXIT_FAILURE);
+	}
+
 	/*
-	 * else extract last elem on stack and put it into register specified
-	 * by #vlaue
+	 * Else extract last elem on stack and put it into register specified
+	 * by the instruction.
 	 */
 	uint32_t reg = extract(instruction,8,31);
 	machine_state->sp += 4;
 	uint32_t *pointer = (uint32_t *)&machine_state->mem[machine_state->sp];
 	machine_state->reg[reg] = *pointer;
-	//machine_state->sp += 4;
 	increment_pc(machine_state,1);
-	fprintf(stderr, "Pc : %u, Value at sp : %u, sp : %u\n", machine_state->pc, *pointer,
-                                                        machine_state->sp);
-
 }
 
 void call_instruction(uint32_t instruction, State *machine_state) {
-	increment_pc(machine_state,1);
-	/* Store jump location in value */
+	increment_pc(machine_state, 1);
+
+	/* Store jump location in value. */
 	uint32_t value = (uint32_t) extract(instruction,8,31);
-	/* Point to a 32 bit word of memory starting at mem[SP] */
+
+	/* Point to a 32 bit word of memory starting at mem[SP]. */
 	uint32_t *pointer = (uint32_t *)&machine_state->mem[machine_state->sp];
-	/* Set that 32 bit word to be PC */
+
+	/* Set that 32 bit word to be PC. */
 	*pointer = (uint32_t) machine_state->pc;
-	/* Decrease sp (stack grows downwards) */
+
+	/* Decrease sp (stack grows downwards). */
 	machine_state->sp -= 4;
-	/* Jump to jump location by setting PC = value */
+
+	/* Jump to jump location by setting PC = value. */
 	machine_state->pc = value;
-	fprintf(stderr, "Pc : %u, Value at sp : %u, sp : %u\n", machine_state->pc, *pointer, 
-							machine_state->sp);
 }
+
 void ret_instruction(uint32_t instruction, State *machine_state) {
-	/* As SP always points to the next free location
-	 * increase it to get the last added element 
+	/*
+	 * As SP always points to the next free location
+	 * increase it to get the last added element.
 	 */
 	machine_state->sp += 4;
-	/* Set pointer to look at the last 32 bit word added to mem[sp] */
+
+	/* Set pointer to look at the last 32 bit word added to mem[sp]. */
 	uint32_t *pointer = (uint32_t *)&machine_state->mem[machine_state->sp];
 	
 	machine_state->pc = (uint16_t) *pointer;
-	fprintf(stderr, "PC : %u SP: %u\n", machine_state->pc, machine_state->sp);
 	
 }
+
 void mov_instruction(uint32_t instruction, State *machine_state) {
-//	 moves 
+	/* 
+	 * Move the given immediate value to the register given by the 
+	 * first operand.
+	 */
 	OperandsI operands = extract_i(instruction);
 	machine_state->reg[operands.r1] = operands.immediate;
-	increment_pc(machine_state,1);
+	increment_pc(machine_state, 1);
 }
+
 void inc_instruction(uint32_t instruction, State *machine_state) {
+	/* Increment the value of a given register. */
 	OperandsR operands = extract_r(instruction);
 	machine_state->reg[operands.r1] += 1;
-	increment_pc(machine_state,1);
+	increment_pc(machine_state, 1);
 }
